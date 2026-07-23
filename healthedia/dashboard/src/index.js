@@ -6,7 +6,7 @@ const Dashboard = () => {
 	const [stats, setStats] = useState({ users: 0, articles: 0, total_views: 0 });
 	const [users, setUsers] = useState([]);
 	const [researchers, setResearchers] = useState([]);
-	const [settings, setSettings] = useState({ site_name: '', site_desc: '', admin_email: '', mock_data_seeded: false });
+	const [settings, setSettings] = useState({ site_name: '', site_desc: '', admin_email: '', mock_data_seeded: false, enable_registration: 'yes', auth_maintenance_mode: 'no' });
 	const [loading, setLoading] = useState(true);
 	const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -263,6 +263,21 @@ const Dashboard = () => {
 								<label className="block font-mono text-[10px] uppercase tracking-widest text-gray-500 mb-2">Admin Contact Email</label>
 								<input type="email" value={settings.admin_email} onChange={e => setSettings({...settings, admin_email: e.target.value})} className="w-full border border-[#E0E0E0] rounded-xl px-4 py-2 font-sans outline-none focus:border-black" />
 							</div>
+
+							<div className="pt-4 border-t border-[#E0E0E0]">
+								<h3 className="text-lg font-bold uppercase tracking-tight mb-4">Authentication Configuration</h3>
+								<div className="space-y-4">
+									<label className="flex items-center gap-3">
+										<input type="checkbox" checked={settings.enable_registration === 'yes'} onChange={e => setSettings({...settings, enable_registration: e.target.checked ? 'yes' : 'no'})} className="w-4 h-4 text-black focus:ring-black border-gray-300 rounded" />
+										<span className="font-mono text-sm text-gray-700">Enable New User Registration</span>
+									</label>
+									<label className="flex items-center gap-3">
+										<input type="checkbox" checked={settings.auth_maintenance_mode === 'yes'} onChange={e => setSettings({...settings, auth_maintenance_mode: e.target.checked ? 'yes' : 'no'})} className="w-4 h-4 text-black focus:ring-black border-gray-300 rounded" />
+										<span className="font-mono text-sm text-gray-700">Enable Auth Maintenance Mode (Disables Login & Registration)</span>
+									</label>
+								</div>
+							</div>
+
 							<div className="pt-4 flex justify-between items-center border-t border-[#E0E0E0]">
 								<button type="submit" className="bg-black text-white px-6 py-2 rounded-full font-sans uppercase text-sm tracking-wide hover:bg-gray-800 transition-colors">Save Settings</button>
 								{settings.mock_data_seeded && (

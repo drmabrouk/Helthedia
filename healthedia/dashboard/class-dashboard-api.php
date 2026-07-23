@@ -239,7 +239,9 @@ class Healthedia_Dashboard_API {
 			'site_name' => get_option('blogname'),
 			'site_desc' => get_option('blogdescription'),
 			'admin_email' => get_option('admin_email'),
-			'mock_data_seeded' => get_option('healthedia_mock_data_seeded', false)
+			'mock_data_seeded' => get_option('healthedia_mock_data_seeded', false),
+			'enable_registration' => get_option('healthedia_enable_registration', 'yes'),
+			'auth_maintenance_mode' => get_option('healthedia_auth_maintenance', 'no')
 		));
 	}
 
@@ -248,6 +250,8 @@ class Healthedia_Dashboard_API {
 		if (isset($params['site_name'])) update_option('blogname', sanitize_text_field($params['site_name']));
 		if (isset($params['site_desc'])) update_option('blogdescription', sanitize_text_field($params['site_desc']));
 		if (isset($params['admin_email'])) update_option('admin_email', sanitize_email($params['admin_email']));
+		if (isset($params['enable_registration'])) update_option('healthedia_enable_registration', sanitize_text_field($params['enable_registration']));
+		if (isset($params['auth_maintenance_mode'])) update_option('healthedia_auth_maintenance', sanitize_text_field($params['auth_maintenance_mode']));
 		return rest_ensure_response(array('success' => true, 'message' => 'Settings saved.'));
 	}
 }

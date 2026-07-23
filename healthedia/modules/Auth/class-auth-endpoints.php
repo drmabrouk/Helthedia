@@ -27,8 +27,33 @@ class Healthedia_Auth_Endpoints {
 		}
 		set_transient($rate_limit_key, $attempts + 1, 15 * MINUTE_IN_SECONDS);
 
+		$is_register = filter_var($request->get_param('is_register'), FILTER_VALIDATE_BOOLEAN);
+
+		if ($is_register) {
+			$registration_enabled = get_option('healthedia_enable_registration', 'yes');
+			if ($registration_enabled !== 'yes') {
+				return new WP_Error('registration_disabled', 'New user registration is currently disabled.', array('status' => 403));
+			}
+			if (email_exists($email)) {
+				return new WP_Error('email_exists', 'An account with this email already exists. Please log in.', array('status' => 400));
+			}
+			// Store temporary registration data
+			$temp_data = array(
+				'name' => sanitize_text_field($request->get_param('name')),
+				'specialty' => sanitize_text_field($request->get_param('specialty')),
+				'institution' => sanitize_text_field($request->get_param('institution')),
+				'country' => sanitize_text_field($request->get_param('country')),
+				'orcid' => sanitize_text_field($request->get_param('orcid'))
+			);
+			set_transient('healthedia_reg_' . md5($email), $temp_data, 15 * MINUTE_IN_SECONDS);
+		} else {
+			if (!email_exists($email)) {
+				return new WP_Error('email_not_found', 'No account found with this email.', array('status' => 400));
+			}
+		}
+
 		$otp = Healthedia_Auth_OTP::generate($email);
-		Healthedia_Auth_Mailer::send_otp($email, $otp);
+		Healthedia_Auth_Mailer::send_otp($email, $otp, $is_register ? 'register' : 'login');
 
 		return rest_ensure_response(array('success' => true, 'message' => 'OTP sent to email.'));
 	}
@@ -36,6 +61,7 @@ class Healthedia_Auth_Endpoints {
 	public function verify_otp($request) {
 		$email = sanitize_email($request->get_param('email'));
 		$otp = sanitize_text_field($request->get_param('otp'));
+		$is_register = filter_var($request->get_param('is_register'), FILTER_VALIDATE_BOOLEAN);
 
 		$ip = $_SERVER['REMOTE_ADDR'];
 		$verify_limit_key = 'healthedia_otp_verify_limit_' . md5($email . '_' . $ip);
@@ -51,10 +77,38 @@ class Healthedia_Auth_Endpoints {
 		delete_transient($verify_limit_key);
 
 		$user = get_user_by('email', $email);
-		if (!$user) {
+
+		if ($is_register) {
+			if ($user) {
+				return new WP_Error('email_exists', 'Account already exists.', array('status' => 400));
+			}
+			$temp_data = get_transient('healthedia_reg_' . md5($email));
+			if (!$temp_data) {
+				return new WP_Error('session_expired', 'Registration session expired. Please start over.', array('status' => 400));
+			}
+
 			$user_id = wp_create_user($email, wp_generate_password(), $email);
+			if (is_wp_error($user_id)) {
+				return new WP_Error('creation_failed', 'Failed to create account.', array('status' => 500));
+			}
 			$user = get_user_by('id', $user_id);
-			$user->set_role('subscriber'); // default role
+			$user->set_role('subscriber');
+
+			// Save custom meta
+			wp_update_user(array('ID' => $user_id, 'display_name' => $temp_data['name']));
+			update_user_meta($user_id, '_healthedia_specialty', $temp_data['specialty']);
+			update_user_meta($user_id, '_healthedia_institution', $temp_data['institution']);
+			update_user_meta($user_id, '_healthedia_country', $temp_data['country']);
+			update_user_meta($user_id, '_healthedia_orcid', $temp_data['orcid']);
+
+			// Auto verify email based on OTP success
+			update_user_meta($user_id, '_healthedia_email_verified', '1');
+
+			delete_transient('healthedia_reg_' . md5($email));
+		} else {
+			if (!$user) {
+				return new WP_Error('user_not_found', 'User not found.', array('status' => 400));
+			}
 		}
 
 		wp_set_current_user($user->ID);

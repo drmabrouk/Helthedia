@@ -1,32 +1,32 @@
-const escapeHTML = (str) => {
-	if (!str) return '';
-	return String(str).replace(/[&<>'"]/g,
-		tag => ({
-			'&': '&amp;',
-			'<': '&lt;',
-			'>': '&gt;',
-			"'": '&#39;',
-			'"': '&quot;'
-		}[tag] || tag)
-	);
-};
-
 document.addEventListener('DOMContentLoaded', () => {
 
-	// Manuscript Submission Logic
-	const msForm = document.getElementById('form-submit-manuscript');
-	if (msForm) {
-		const msFile = document.getElementById('ms-file');
-		const msFileName = document.getElementById('ms-file-name');
+	const escapeHTML = (str) => {
+		if (typeof str !== 'string') return str;
+		return str.replace(/[&<>'"]/g,
+			tag => ({
+				'&': '&amp;',
+				'<': '&lt;',
+				'>': '&gt;',
+				"'": '&#39;',
+				'"': '&quot;'
+			}[tag] || tag)
+		);
+	};
 
-		msFile.addEventListener('change', (e) => {
-			if(e.target.files.length > 0) {
-				msFileName.innerText = 'Selected: ' + e.target.files[0].name;
-				msFileName.classList.add('text-black', 'font-bold');
+	// Submit Manuscript Form Logic
+	const formSubmitMs = document.getElementById('form-submit-manuscript');
+	if (formSubmitMs) {
+		const fileInput = document.getElementById('ms-file');
+		const fileNameDisplay = document.getElementById('ms-file-name');
+
+		fileInput.addEventListener('change', (e) => {
+			if (e.target.files.length > 0) {
+				fileNameDisplay.innerText = 'Selected: ' + e.target.files[0].name;
+				fileNameDisplay.classList.add('text-black', 'font-bold');
 			}
 		});
 
-		msForm.addEventListener('submit', (e) => {
+		formSubmitMs.addEventListener('submit', (e) => {
 			e.preventDefault();
 			const btn = document.getElementById('btn-submit-ms');
 			const status = document.getElementById('ms-status');
@@ -40,17 +40,13 @@ document.addEventListener('DOMContentLoaded', () => {
 			formData.append('abstract', document.getElementById('ms-abstract').value);
 			formData.append('specialty', document.getElementById('ms-specialty').value);
 			formData.append('nct', document.getElementById('ms-nct').value);
-			formData.append('manuscript', msFile.files[0]);
+			formData.append('manuscript', fileInput.files[0]);
 
-			// We need the nonce for authenticated requests.
-			// We can get it if we print it in the header for logged in users.
 			const nonce = window.healthediaPublicSettings?.nonce || '';
 
 			fetch('/wp-json/healthedia/v1/manuscript/submit', {
 				method: 'POST',
-				headers: {
-					'X-WP-Nonce': nonce
-				},
+				headers: { 'X-WP-Nonce': nonce },
 				body: formData
 			})
 			.then(res => res.json())
@@ -59,12 +55,12 @@ document.addEventListener('DOMContentLoaded', () => {
 				btn.disabled = false;
 				status.classList.remove('hidden', 'bg-red-50', 'text-red-600');
 
-				if(data.success) {
+				if (data.success) {
 					status.classList.add('bg-green-50', 'text-green-700', 'border', 'border-green-200');
 					status.innerText = data.message;
-					msForm.reset();
-					msFileName.innerText = 'Accepted formats: .PDF, .DOCX (Max 20MB)';
-					msFileName.classList.remove('text-black', 'font-bold');
+					formSubmitMs.reset();
+					fileNameDisplay.innerText = 'Accepted formats: .PDF, .DOCX (Max 20MB)';
+					fileNameDisplay.classList.remove('text-black', 'font-bold');
 				} else {
 					status.classList.add('bg-red-50', 'text-red-600', 'border', 'border-red-200');
 					status.innerText = data.message || 'Submission failed.';
@@ -116,80 +112,6 @@ document.addEventListener('DOMContentLoaded', () => {
 		});
 	}
 
-	// Gateway Search Logic
-	const gatewaySearchInput = document.getElementById('gateway-search-input');
-	const gatewaySearchResults = document.getElementById('gateway-search-results');
-	const gatewaySearchList = document.getElementById('gateway-search-list');
-	let searchTimeout = null;
-	let currentTypeFilter = '';
-
-	const performSearch = (query, type) => {
-		gatewaySearchList.innerHTML = '<li class="px-6 py-4 text-gray-500 font-mono text-sm text-center animate-pulse">Searching archive...</li>';
-		gatewaySearchResults.classList.remove('hidden');
-
-		fetch(`/wp-json/healthedia/v1/search?q=${encodeURIComponent(query)}&type=${encodeURIComponent(type)}`)
-			.then(res => res.json())
-			.then(data => {
-				gatewaySearchList.innerHTML = '';
-				if (data.results && data.results.length > 0) {
-					data.results.forEach(result => {
-						const li = document.createElement('li');
-						li.className = 'px-6 py-3 hover:bg-gray-50 border-b border-[#E0E0E0] last:border-0 transition-colors';
-						li.innerHTML = `
-							<a href="${result.url}" class="block">
-								<div class="font-bold text-black font-sans">${escapeHTML(result.title)}</div>
-								<div class="font-mono text-[10px] text-gray-500 uppercase tracking-widest mt-1">${result.object_type}</div>
-							</a>
-						`;
-						gatewaySearchList.appendChild(li);
-					});
-				} else {
-					gatewaySearchList.innerHTML = '<li class="px-6 py-4 text-gray-500 font-mono text-sm text-center">No results found in archive.</li>';
-				}
-			})
-			.catch(() => {
-				gatewaySearchList.innerHTML = '<li class="px-6 py-4 text-red-500 font-mono text-sm text-center">Error communicating with server.</li>';
-			});
-	};
-
-	if (gatewaySearchInput) {
-		gatewaySearchInput.addEventListener('input', (e) => {
-			const query = e.target.value.trim();
-			clearTimeout(searchTimeout);
-			if (query.length > 2) {
-				searchTimeout = setTimeout(() => {
-					performSearch(query, currentTypeFilter);
-				}, 300);
-			} else {
-				gatewaySearchResults.classList.add('hidden');
-			}
-		});
-
-		document.addEventListener('click', (e) => {
-			if (!gatewaySearchInput.contains(e.target) && !gatewaySearchResults.contains(e.target)) {
-				gatewaySearchResults.classList.add('hidden');
-			}
-		});
-
-		const searchTags = document.querySelectorAll('.search-tag');
-		searchTags.forEach(tag => {
-			tag.addEventListener('click', (e) => {
-				searchTags.forEach(t => t.classList.remove('bg-black', 'text-white', 'border-black'));
-				searchTags.forEach(t => t.classList.add('text-gray-500', 'border-[#E0E0E0]'));
-
-				e.target.classList.remove('text-gray-500', 'border-[#E0E0E0]');
-				e.target.classList.add('bg-black', 'text-white', 'border-black');
-
-				currentTypeFilter = e.target.getAttribute('data-type');
-
-				const query = gatewaySearchInput.value.trim();
-				if (query.length > 2) {
-					performSearch(query, currentTypeFilter);
-				}
-			});
-		});
-	}
-
 	// Directory Grid Fetching
 	const dirGrid = document.getElementById('directory-grid');
 	const dirCount = document.getElementById('dir-count');
@@ -229,81 +151,155 @@ document.addEventListener('DOMContentLoaded', () => {
 			});
 	}
 
-	// Dedicated Auth Page Logic
-	const authFormEmailPage = document.getElementById('auth-form-email-page');
-	const authFormOtpPage = document.getElementById('auth-form-otp-page');
-	const authEmailInputPage = document.getElementById('auth-email-page');
+	// Dedicated Auth Page Logic (Redesigned Unified Layout)
+	const loginContainer = document.getElementById('auth-login-container');
+	const registerContainer = document.getElementById('auth-register-container');
+	const otpContainer = document.getElementById('auth-otp-container');
+	const alerts = document.getElementById('auth-alerts');
 
-	if (authFormEmailPage) {
+	if (loginContainer) {
 		const tabLogin = document.getElementById('tab-login');
 		const tabRegister = document.getElementById('tab-register');
+		const verifyEmailInput = document.getElementById('verify-email-input');
+		const verifyIsRegister = document.getElementById('verify-is-register');
+		const btnCancelOtp = document.getElementById('btn-cancel-otp');
 
-		const switchTab = (active, inactive) => {
-			active.classList.replace('border-transparent', 'border-black');
-			active.classList.replace('text-gray-400', 'text-black');
-			active.classList.add('font-bold');
+		const formLogin = document.getElementById('auth-form-login');
+		const formRegister = document.getElementById('auth-form-register');
+		const formOtpVerify = document.getElementById('auth-form-otp-verify');
 
-			inactive.classList.replace('border-black', 'border-transparent');
-			inactive.classList.replace('text-black', 'text-gray-400');
-			inactive.classList.remove('font-bold');
+		const showAlert = (msg, isError = true) => {
+			alerts.classList.remove('hidden');
+			if (isError) {
+				alerts.className = 'mb-6 p-4 rounded font-mono text-xs text-center border border-red-200 bg-red-50 text-red-600';
+			} else {
+				alerts.className = 'mb-6 p-4 rounded font-mono text-xs text-center border border-green-200 bg-green-50 text-green-700';
+			}
+			alerts.innerText = msg;
 		};
 
-		if(tabLogin && tabRegister) {
-			tabLogin.addEventListener('click', () => switchTab(tabLogin, tabRegister));
-			tabRegister.addEventListener('click', () => switchTab(tabRegister, tabLogin));
+		if (tabLogin && tabRegister) {
+			tabLogin.addEventListener('click', () => {
+				tabLogin.classList.replace('text-gray-400', 'text-black');
+				tabLogin.classList.replace('border-transparent', 'border-[#E0E0E0]');
+				tabLogin.classList.add('bg-white', 'shadow-sm', 'font-bold');
+
+				tabRegister.classList.replace('text-black', 'text-gray-400');
+				tabRegister.classList.replace('border-[#E0E0E0]', 'border-transparent');
+				tabRegister.classList.remove('bg-white', 'shadow-sm', 'font-bold');
+
+				loginContainer.classList.remove('hidden');
+				registerContainer.classList.add('hidden');
+				alerts.classList.add('hidden');
+			});
+
+			tabRegister.addEventListener('click', () => {
+				tabRegister.classList.replace('text-gray-400', 'text-black');
+				tabRegister.classList.replace('border-transparent', 'border-[#E0E0E0]');
+				tabRegister.classList.add('bg-white', 'shadow-sm', 'font-bold');
+
+				tabLogin.classList.replace('text-black', 'text-gray-400');
+				tabLogin.classList.replace('border-[#E0E0E0]', 'border-transparent');
+				tabLogin.classList.remove('bg-white', 'shadow-sm', 'font-bold');
+
+				registerContainer.classList.remove('hidden');
+				loginContainer.classList.add('hidden');
+				alerts.classList.add('hidden');
+			});
 		}
 
-		authFormEmailPage.addEventListener('submit', (e) => {
-			e.preventDefault();
-			const email = authEmailInputPage.value;
-			const btn = document.getElementById('btn-request-otp');
+		const requestOtp = (form, isReg) => {
+			const btn = isReg ? document.getElementById('btn-register-submit') : document.getElementById('btn-login-submit');
 			const originalText = btn.innerHTML;
 			btn.innerHTML = '<span class="animate-pulse">Processing...</span>';
 			btn.disabled = true;
+			alerts.classList.add('hidden');
+
+			const formData = new FormData(form);
+			const data = Object.fromEntries(formData.entries());
 
 			fetch('/wp-json/healthedia/v1/auth/request-otp', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ email })
-			}).then(res => res.json()).then(data => {
+				body: JSON.stringify(data)
+			}).then(res => res.json()).then(resData => {
 				btn.innerHTML = originalText;
 				btn.disabled = false;
-				if (data.success) {
-					authFormEmailPage.classList.add('hidden');
-					authFormOtpPage.classList.remove('hidden');
+				if (resData.success) {
+					verifyEmailInput.value = data.email;
+					verifyIsRegister.value = isReg;
+
+					otpContainer.classList.remove('hidden', 'translate-y-full');
+					setTimeout(() => document.getElementById('auth-otp-page').focus(), 300);
 				} else {
-					alert(data.message || 'Error requesting OTP.');
+					showAlert(resData.message || 'Error requesting OTP.');
 				}
 			}).catch(() => {
 				btn.innerHTML = originalText;
 				btn.disabled = false;
-				alert('Network error requesting OTP.');
+				showAlert('Network error communicating with authentication server.');
 			});
-		});
+		};
 
-		authFormOtpPage.addEventListener('submit', (e) => {
-			e.preventDefault();
-			const email = authEmailInputPage.value;
-			const otp = document.getElementById('auth-otp-page').value;
-			fetch('/wp-json/healthedia/v1/auth/verify-otp', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ email, otp })
-			}).then(res => res.json()).then(data => {
-				if (data.success) {
-					window.location.href = '/';
-				} else {
-					alert(data.message || 'Invalid OTP.');
-				}
-			}).catch(() => alert('Network error verifying OTP.'));
-		});
+		if (formLogin) {
+			formLogin.addEventListener('submit', (e) => {
+				e.preventDefault();
+				requestOtp(formLogin, false);
+			});
+		}
 
-		const btnResend = document.getElementById('btn-resend-otp');
-		if (btnResend) {
-			btnResend.addEventListener('click', () => {
-				authFormOtpPage.classList.add('hidden');
-				authFormEmailPage.classList.remove('hidden');
-				document.getElementById('auth-otp-page').value = '';
+		if (formRegister) {
+			formRegister.addEventListener('submit', (e) => {
+				e.preventDefault();
+				requestOtp(formRegister, true);
+			});
+		}
+
+		if (formOtpVerify) {
+			formOtpVerify.addEventListener('submit', (e) => {
+				e.preventDefault();
+				const btn = document.getElementById('btn-verify-submit');
+				const originalText = btn.innerHTML;
+				btn.innerHTML = '<span class="animate-pulse">Verifying...</span>';
+				btn.disabled = true;
+				alerts.classList.add('hidden');
+
+				const formData = new FormData(formOtpVerify);
+				const data = Object.fromEntries(formData.entries());
+				data.is_register = data.is_register === 'true';
+
+				fetch('/wp-json/healthedia/v1/auth/verify-otp', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify(data)
+				}).then(res => res.json()).then(resData => {
+					if (resData.success) {
+						window.location.href = '/';
+					} else {
+						btn.innerHTML = originalText;
+						btn.disabled = false;
+						document.getElementById('auth-otp-page').value = '';
+						showAlert(resData.message || 'Invalid OTP.');
+						otpContainer.classList.add('translate-y-full');
+						setTimeout(() => otpContainer.classList.add('hidden'), 300);
+					}
+				}).catch(() => {
+					btn.innerHTML = originalText;
+					btn.disabled = false;
+					showAlert('Network error verifying OTP.');
+					otpContainer.classList.add('translate-y-full');
+					setTimeout(() => otpContainer.classList.add('hidden'), 300);
+				});
+			});
+		}
+
+		if (btnCancelOtp) {
+			btnCancelOtp.addEventListener('click', () => {
+				otpContainer.classList.add('translate-y-full');
+				setTimeout(() => {
+					otpContainer.classList.add('hidden');
+					document.getElementById('auth-otp-page').value = '';
+				}, 300);
 			});
 		}
 	}

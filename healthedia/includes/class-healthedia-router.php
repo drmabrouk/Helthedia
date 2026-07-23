@@ -39,6 +39,11 @@ class Healthedia_Router {
 		}
 	}
 
+	public function redirect_after_logout() {
+		wp_safe_redirect( home_url() );
+		exit();
+	}
+
 	public function load_templates($template) {
 		$dashboard = get_query_var('healthedia_dashboard');
 		if ($dashboard) {
