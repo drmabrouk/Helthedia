@@ -15,11 +15,18 @@ if (!$user) {
 	return;
 }
 
-$is_private = get_user_meta($user_id, '_healthedia_is_private', true);
-if ($is_private === 'yes' && get_current_user_id() != $user_id) {
-	echo "<div class='text-center py-20 font-sans'>This profile is private.</div>";
-	include HEALTHEDIA_PLUGIN_DIR . 'public/views/layout-footer.php';
-	return;
+$privacy_mode = get_user_meta($user_id, '_healthedia_privacy_mode', true) ?: 'public';
+
+if (get_current_user_id() != $user_id) {
+	if ($privacy_mode === 'private') {
+		echo "<div class='text-center py-20 font-sans'>This profile is private.</div>";
+		include HEALTHEDIA_PLUGIN_DIR . 'public/views/layout-footer.php';
+		return;
+	} elseif ($privacy_mode === 'hidden') {
+		echo "<div class='text-center py-20 font-sans'>This profile is temporarily hidden.</div>";
+		include HEALTHEDIA_PLUGIN_DIR . 'public/views/layout-footer.php';
+		return;
+	}
 }
 
 require_once HEALTHEDIA_PLUGIN_DIR . 'modules/Profiles/class-profile-model.php';

@@ -24,13 +24,13 @@ class Healthedia_Directory_Endpoints {
 				array(
 					'relation' => 'OR',
 					array(
-						'key'     => '_healthedia_is_private',
+						'key'     => '_healthedia_privacy_mode',
 						'compare' => 'NOT EXISTS',
 					),
 					array(
-						'key'     => '_healthedia_is_private',
-						'value'   => 'yes',
-						'compare' => '!=',
+						'key'     => '_healthedia_privacy_mode',
+						'value'   => 'public',
+						'compare' => '=',
 					),
 				)
 			)

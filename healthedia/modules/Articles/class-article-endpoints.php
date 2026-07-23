@@ -6,6 +6,31 @@ class Healthedia_Article_Endpoints {
 			'callback' => array($this, 'handle_submission'),
 			'permission_callback' => function() { return is_user_logged_in(); }
 		));
+		register_rest_route('healthedia/v1', '/manuscript/(?P<id>\d+)', array(
+			'methods' => 'DELETE',
+			'callback' => array($this, 'delete_submission'),
+			'permission_callback' => function() { return is_user_logged_in(); }
+		));
+	}
+
+	public function delete_submission($request) {
+		$post_id = $request->get_param('id');
+		$post = get_post($post_id);
+
+		if (!$post || $post->post_type !== 'healthedia_article') {
+			return new WP_Error('not_found', 'Manuscript not found.', array('status' => 404));
+		}
+
+		if ($post->post_author != get_current_user_id()) {
+			return new WP_Error('unauthorized', 'You can only withdraw your own submissions.', array('status' => 403));
+		}
+
+		if ($post->post_status === 'publish') {
+			return new WP_Error('unauthorized', 'Cannot withdraw a published manuscript.', array('status' => 403));
+		}
+
+		wp_delete_post($post_id, true);
+		return rest_ensure_response(array('success' => true, 'message' => 'Manuscript successfully withdrawn.'));
 	}
 
 	public function handle_submission($request) {

@@ -3,12 +3,16 @@
 $user_id = get_current_user_id();
 $user = wp_get_current_user();
 $username = get_user_meta($user_id, '_healthedia_username', true);
+$first_name = get_user_meta($user_id, 'first_name', true);
+$last_name = get_user_meta($user_id, 'last_name', true);
 $specialty = get_user_meta($user_id, '_healthedia_specialty', true);
 $institution = get_user_meta($user_id, '_healthedia_institution', true);
 $country = get_user_meta($user_id, '_healthedia_country', true);
 $orcid = get_user_meta($user_id, '_healthedia_orcid', true);
-$is_private = get_user_meta($user_id, '_healthedia_is_private', true);
+$privacy_mode = get_user_meta($user_id, '_healthedia_privacy_mode', true) ?: 'public';
 $description = get_user_meta($user_id, 'description', true);
+
+$public_url = $username ? home_url('/u/' . $username) : home_url('/profile/' . $user_id);
 ?>
 <div class="max-w-7xl mx-auto flex flex-col md:flex-row gap-12 py-12 px-4 bg-white text-[#111111]">
 	<?php include HEALTHEDIA_PLUGIN_DIR . 'public/views/layout-member-sidebar.php'; ?>
@@ -26,15 +30,35 @@ $description = get_user_meta($user_id, 'description', true);
 					Profile Privacy & Visibility
 				</h2>
 
-				<label class="flex items-start gap-3 cursor-pointer">
-					<div class="pt-1">
-						<input type="checkbox" name="_healthedia_is_private" value="yes" <?php checked($is_private, 'yes'); ?> class="w-4 h-4 text-black border-gray-300 focus:ring-black">
-					</div>
-					<div>
-						<span class="block font-sans font-bold text-sm">Make my profile private</span>
-						<span class="block font-mono text-xs text-gray-500 mt-1">If checked, your profile page and academic portfolio will only be visible to you. It will be hidden from the Global Directory and external visitors.</span>
-					</div>
-				</label>
+				<div class="space-y-4 font-sans text-sm">
+					<label class="flex items-start gap-3 cursor-pointer">
+						<div class="pt-0.5">
+							<input type="radio" name="_healthedia_privacy_mode" value="public" <?php checked($privacy_mode, 'public'); ?> class="w-4 h-4 text-black border-gray-300 focus:ring-black">
+						</div>
+						<div>
+							<span class="block font-bold">Public (Visible to everyone)</span>
+							<span class="block font-mono text-xs text-gray-500 mt-1">Your profile is visible in the Global Directory and via external search engines.</span>
+						</div>
+					</label>
+					<label class="flex items-start gap-3 cursor-pointer">
+						<div class="pt-0.5">
+							<input type="radio" name="_healthedia_privacy_mode" value="hidden" <?php checked($privacy_mode, 'hidden'); ?> class="w-4 h-4 text-black border-gray-300 focus:ring-black">
+						</div>
+						<div>
+							<span class="block font-bold">Hidden</span>
+							<span class="block font-mono text-xs text-gray-500 mt-1">Your profile is temporarily hidden from the Global Directory and external visitors.</span>
+						</div>
+					</label>
+					<label class="flex items-start gap-3 cursor-pointer">
+						<div class="pt-0.5">
+							<input type="radio" name="_healthedia_privacy_mode" value="private" <?php checked($privacy_mode, 'private'); ?> class="w-4 h-4 text-black border-gray-300 focus:ring-black">
+						</div>
+						<div>
+							<span class="block font-bold">Private</span>
+							<span class="block font-mono text-xs text-gray-500 mt-1">Your profile and academic portfolio are strictly visible only to you.</span>
+						</div>
+					</label>
+				</div>
 			</div>
 
 			<!-- Public URL -->
@@ -45,7 +69,9 @@ $description = get_user_meta($user_id, 'description', true);
 					<span class="flex items-center px-4 bg-gray-100 border border-r-0 border-[#E0E0E0] rounded-l-xl font-mono text-sm text-gray-500">healthedia.org/u/</span>
 					<input type="text" name="_healthedia_username" value="<?php echo esc_attr($username ?: $user->user_login); ?>" class="flex-grow border border-[#E0E0E0] rounded-r-xl px-4 py-2.5 font-sans outline-none focus:border-black bg-white" pattern="[a-zA-Z0-9_-]+" title="Only letters, numbers, underscores, and hyphens are allowed.">
 				</div>
-				<p class="font-mono text-xs text-gray-500 mt-2">This is your unique encyclopedia URL. It can be shared publicly for citations.</p>
+				<p class="font-mono text-xs text-gray-500 mt-3">
+					Current Public URL: <a href="<?php echo esc_url($public_url); ?>" class="text-black font-bold hover:underline" target="_blank"><?php echo esc_url($public_url); ?></a>
+				</p>
 			</div>
 
 			<!-- Profile Information -->
@@ -53,6 +79,14 @@ $description = get_user_meta($user_id, 'description', true);
 				<h2 class="font-sans font-bold uppercase tracking-wider text-sm mb-6">Academic Information</h2>
 
 				<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+					<div>
+						<label class="block font-mono text-[10px] uppercase tracking-widest text-gray-500 mb-2">First Name</label>
+						<input type="text" name="first_name" value="<?php echo esc_attr($first_name); ?>" required class="w-full border border-[#E0E0E0] rounded-xl px-4 py-2.5 font-sans outline-none focus:border-black bg-white">
+					</div>
+					<div>
+						<label class="block font-mono text-[10px] uppercase tracking-widest text-gray-500 mb-2">Last Name</label>
+						<input type="text" name="last_name" value="<?php echo esc_attr($last_name); ?>" required class="w-full border border-[#E0E0E0] rounded-xl px-4 py-2.5 font-sans outline-none focus:border-black bg-white">
+					</div>
 					<div>
 						<label class="block font-mono text-[10px] uppercase tracking-widest text-gray-500 mb-2">Primary Specialty</label>
 						<input type="text" name="_healthedia_specialty" value="<?php echo esc_attr($specialty); ?>" placeholder="e.g. Sports Science & Physiology" class="w-full border border-[#E0E0E0] rounded-xl px-4 py-2.5 font-sans outline-none focus:border-black bg-white">
@@ -101,11 +135,6 @@ document.addEventListener('DOMContentLoaded', () => {
 		e.preventDefault();
 		const formData = new FormData(form);
 		const data = Object.fromEntries(formData.entries());
-
-		// Checkbox logic
-		if (!formData.has('_healthedia_is_private')) {
-			data['_healthedia_is_private'] = 'no';
-		}
 
 		msgBox.classList.add('hidden');
 		spinner.classList.remove('hidden');

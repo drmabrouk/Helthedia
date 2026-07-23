@@ -23,7 +23,7 @@ class Healthedia_Profile_Endpoints {
 			'_healthedia_institution',
 			'_healthedia_country',
 			'_healthedia_orcid',
-			'_healthedia_is_private'
+			'_healthedia_privacy_mode'
 		);
 
 		foreach ($updatable_meta as $key) {
@@ -32,9 +32,26 @@ class Healthedia_Profile_Endpoints {
 			}
 		}
 
-		if (isset($params['description'])) {
-			wp_update_user(array('ID' => $user_id, 'description' => sanitize_textarea_field($params['description'])));
+		$user_data = array('ID' => $user_id);
+
+		if (isset($params['first_name'])) {
+			$user_data['first_name'] = sanitize_text_field($params['first_name']);
+			update_user_meta($user_id, 'first_name', $user_data['first_name']);
 		}
+		if (isset($params['last_name'])) {
+			$user_data['last_name'] = sanitize_text_field($params['last_name']);
+			update_user_meta($user_id, 'last_name', $user_data['last_name']);
+		}
+
+		if (isset($params['first_name']) && isset($params['last_name'])) {
+			$user_data['display_name'] = $user_data['first_name'] . ' ' . $user_data['last_name'];
+		}
+
+		if (isset($params['description'])) {
+			$user_data['description'] = sanitize_textarea_field($params['description']);
+		}
+
+		wp_update_user($user_data);
 
 		if (isset($params['_healthedia_username'])) {
 			$new_username = sanitize_title($params['_healthedia_username']);

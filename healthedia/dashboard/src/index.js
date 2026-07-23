@@ -10,6 +10,10 @@ const Dashboard = () => {
 	const [loading, setLoading] = useState(true);
 	const [sidebarOpen, setSidebarOpen] = useState(false);
 
+	// Search state
+	const [userSearch, setUserSearch] = useState('');
+	const [researcherSearch, setResearcherSearch] = useState('');
+
 	// Modals
 	const [showUserModal, setShowUserModal] = useState(false);
 	const [editingUser, setEditingUser] = useState(null);
@@ -169,8 +173,14 @@ const Dashboard = () => {
 
 				{activeTab === 'users' && (
 					<>
-						<header className="mb-6 md:mb-8 border-b border-[#E0E0E0] pb-6 flex justify-between items-end">
-							<h2 className="text-2xl md:text-3xl font-bold uppercase tracking-tight">System Users Management</h2>
+						<header className="mb-6 md:mb-8 border-b border-[#E0E0E0] pb-6 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+							<div>
+								<h2 className="text-2xl md:text-3xl font-bold uppercase tracking-tight">System Users Management</h2>
+								<div className="mt-4 relative">
+									<input type="text" placeholder="Search users by name or email..." value={userSearch} onChange={e => setUserSearch(e.target.value)} className="w-full md:w-80 border border-[#E0E0E0] rounded-lg pl-10 pr-4 py-2 text-sm font-sans outline-none focus:border-black" />
+									<svg className="w-4 h-4 text-gray-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+								</div>
+							</div>
 							<button onClick={() => { setEditingUser(null); setShowUserModal(true); }} className="bg-black text-white px-4 py-2 rounded-full font-mono text-[10px] uppercase tracking-widest hover:bg-gray-800 transition-colors">Add User</button>
 						</header>
 						<div className="bg-white border border-[#E0E0E0] rounded-2xl shadow-sm overflow-x-auto">
@@ -186,7 +196,7 @@ const Dashboard = () => {
 									</tr>
 								</thead>
 								<tbody className="font-sans text-sm divide-y divide-[#E0E0E0]">
-									{users.map(u => (
+									{users.filter(u => u.name.toLowerCase().includes(userSearch.toLowerCase()) || u.email.toLowerCase().includes(userSearch.toLowerCase())).map(u => (
 										<tr key={u.id} className="hover:bg-gray-50 transition-colors">
 											<td className="py-4 px-6 font-mono text-xs text-gray-500">{u.id}</td>
 											<td className="py-4 px-6 font-bold whitespace-nowrap">{u.name}</td>
@@ -207,8 +217,14 @@ const Dashboard = () => {
 
 				{activeTab === 'researchers' && (
 					<>
-						<header className="mb-6 md:mb-8 border-b border-[#E0E0E0] pb-6 flex justify-between items-end">
-							<h2 className="text-2xl md:text-3xl font-bold uppercase tracking-tight">Researchers Management</h2>
+						<header className="mb-6 md:mb-8 border-b border-[#E0E0E0] pb-6 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+							<div>
+								<h2 className="text-2xl md:text-3xl font-bold uppercase tracking-tight">Researchers Management</h2>
+								<div className="mt-4 relative">
+									<input type="text" placeholder="Search researchers..." value={researcherSearch} onChange={e => setResearcherSearch(e.target.value)} className="w-full md:w-80 border border-[#E0E0E0] rounded-lg pl-10 pr-4 py-2 text-sm font-sans outline-none focus:border-black" />
+									<svg className="w-4 h-4 text-gray-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+								</div>
+							</div>
 							<button onClick={() => { setEditingResearcher(null); setShowResearcherModal(true); }} className="bg-black text-white px-4 py-2 rounded-full font-mono text-[10px] uppercase tracking-widest hover:bg-gray-800 transition-colors">Add Researcher</button>
 						</header>
 						<div className="bg-white border border-[#E0E0E0] rounded-2xl shadow-sm overflow-x-auto">
@@ -224,7 +240,7 @@ const Dashboard = () => {
 									</tr>
 								</thead>
 								<tbody className="font-sans text-sm divide-y divide-[#E0E0E0]">
-									{researchers.map(r => (
+									{researchers.filter(r => r.name.toLowerCase().includes(researcherSearch.toLowerCase()) || r.specialty.toLowerCase().includes(researcherSearch.toLowerCase())).map(r => (
 										<tr key={r.id} className="hover:bg-gray-50 transition-colors">
 											<td className="py-4 px-6 font-mono text-xs text-gray-500">{r.id}</td>
 											<td className="py-4 px-6 font-bold whitespace-nowrap">{r.name}</td>

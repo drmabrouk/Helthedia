@@ -33,10 +33,10 @@ class Healthedia_Search_Endpoints {
 
 		$formatted_results = array();
 		foreach ($results as $row) {
-			// Skip private profiles
+			// Skip private/hidden profiles
 			if ($row->object_type === 'user') {
-				$is_private = get_user_meta($row->object_id, '_healthedia_is_private', true);
-				if ($is_private === 'yes') continue;
+				$privacy_mode = get_user_meta($row->object_id, '_healthedia_privacy_mode', true) ?: 'public';
+				if (in_array($privacy_mode, ['private', 'hidden'])) continue;
 			}
 
 			$raw_meta = json_decode($row->metadata, true);
