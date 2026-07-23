@@ -39,6 +39,10 @@ $country = get_user_meta($user_id, '_healthedia_country', true);
 $orcid = get_user_meta($user_id, '_healthedia_orcid', true);
 ?>
 <div class="healthedia-profile max-w-5xl mx-auto py-12 px-4 bg-white text-[#111111]">
+	<?php
+	require_once HEALTHEDIA_PLUGIN_DIR . 'public/views/partials/breadcrumbs.php';
+	healthedia_breadcrumbs();
+	?>
 
 	<!-- Top Bar Action -->
 	<div class="flex justify-between items-center mb-8">
@@ -54,7 +58,7 @@ $orcid = get_user_meta($user_id, '_healthedia_orcid', true);
 	<!-- Profile Card Header -->
 	<div class="border border-[#E0E0E0] rounded-2xl p-6 md:p-8 mb-8 flex flex-col md:flex-row items-start gap-6 relative">
 		<div class="w-32 h-32 bg-gray-200 rounded-xl flex-shrink-0 relative overflow-hidden">
-			<?php echo get_avatar($user_id, 256, '', '', array('class' => 'w-full h-full object-cover')); ?>
+			<?php echo get_avatar($user_id, 256, '', esc_attr($user->display_name) . ' profile picture', array('class' => 'w-full h-full object-cover', 'loading' => 'lazy')); ?>
 			<?php if ($is_verified): ?>
 			<div class="absolute bottom-[-8px] right-[-8px] bg-black text-white p-1.5 rounded-full border-4 border-white">
 				<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>

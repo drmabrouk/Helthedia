@@ -30,6 +30,11 @@ include HEALTHEDIA_PLUGIN_DIR . 'public/views/layout-header.php';
 
 	<!-- Main Content -->
 	<main class="w-full md:w-3/4 article-content transition-all duration-300">
+		<?php
+		require_once HEALTHEDIA_PLUGIN_DIR . 'public/views/partials/breadcrumbs.php';
+		healthedia_breadcrumbs();
+		?>
+
 		<div class="flex gap-2 mb-4 font-mono text-xs">
 			<span class="px-2 py-1 bg-[#111111] text-white rounded-full uppercase tracking-wider">Peer-Reviewed</span>
 			<span class="px-2 py-1 border border-[#111111] rounded-full uppercase tracking-wider">Open Access</span>

@@ -2,7 +2,12 @@
 <?php
 $query = isset($_GET['q']) ? sanitize_text_field($_GET['q']) : '';
 ?>
-<div class="max-w-7xl mx-auto py-12 px-4 bg-white text-[#111111] min-h-[60vh] flex flex-col md:flex-row gap-8">
+<div class="max-w-7xl mx-auto py-12 px-4 bg-white text-[#111111] min-h-[60vh]">
+	<?php
+	require_once HEALTHEDIA_PLUGIN_DIR . 'public/views/partials/breadcrumbs.php';
+	healthedia_breadcrumbs();
+	?>
+	<div class="flex flex-col md:flex-row gap-8">
 
 	<!-- Sidebar Filters -->
 	<aside class="w-full md:w-64 flex-shrink-0">
@@ -225,4 +230,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 	}
 });
 </script>
+</div>
+</div>
 <?php include HEALTHEDIA_PLUGIN_DIR . 'public/views/layout-footer.php'; ?>

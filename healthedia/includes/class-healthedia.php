@@ -18,6 +18,8 @@ class Healthedia {
 		require_once HEALTHEDIA_PLUGIN_DIR . 'includes/class-healthedia-loader.php';
 		require_once HEALTHEDIA_PLUGIN_DIR . 'includes/class-healthedia-i18n.php';
 		require_once HEALTHEDIA_PLUGIN_DIR . 'includes/class-healthedia-router.php';
+		require_once HEALTHEDIA_PLUGIN_DIR . 'includes/class-healthedia-seo.php';
+		require_once HEALTHEDIA_PLUGIN_DIR . 'includes/class-healthedia-sitemap.php';
 		require_once HEALTHEDIA_PLUGIN_DIR . 'includes/Base/interface-module.php';
 		require_once HEALTHEDIA_PLUGIN_DIR . 'includes/Base/class-base-controller.php';
 
@@ -57,6 +59,12 @@ class Healthedia {
 
 		// Register Institution Custom Post Type
 		$this->loader->add_action('init', $this, 'register_institution_cpt');
+
+		$seo = new Healthedia_SEO();
+		$this->loader->add_action( 'wp_head', $seo, 'inject_metadata', 5 );
+
+		$sitemap = new Healthedia_Sitemap();
+		$sitemap->init();
 	}
 
 	public function register_institution_cpt() {
