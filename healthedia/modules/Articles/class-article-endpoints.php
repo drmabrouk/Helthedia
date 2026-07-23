@@ -24,12 +24,16 @@ class Healthedia_Article_Endpoints {
 		}
 
 		$file = $files['manuscript'];
-		if (!in_array($file['type'], ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'])) {
-			return new WP_Error('invalid_file', 'Only PDF and DOCX files are allowed.', array('status' => 400));
-		}
 
 		require_once(ABSPATH . 'wp-admin/includes/file.php');
-		$upload = wp_handle_upload($file, array('test_form' => false));
+		$upload_overrides = array(
+			'test_form' => false,
+			'mimes' => array(
+				'pdf' => 'application/pdf',
+				'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+			)
+		);
+		$upload = wp_handle_upload($file, $upload_overrides);
 
 		if (isset($upload['error'])) {
 			return new WP_Error('upload_error', $upload['error'], array('status' => 500));

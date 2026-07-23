@@ -6,6 +6,9 @@ class Healthedia_Activator {
 
 		self::auto_provision_pages();
 
+		require_once HEALTHEDIA_PLUGIN_DIR . 'includes/class-healthedia-seeder.php';
+		Healthedia_Seeder::seed_mock_data();
+
 		require_once HEALTHEDIA_PLUGIN_DIR . 'includes/class-healthedia-router.php';
 		$router = new Healthedia_Router();
 		$router->add_rewrite_rules();

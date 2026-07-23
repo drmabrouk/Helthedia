@@ -14,6 +14,8 @@ class Healthedia_Router {
 
 		add_rewrite_rule('^journal/?', 'index.php?healthedia_page=journal_archive', 'top');
 
+		add_rewrite_rule('^archive-search/?', 'index.php?healthedia_page=archive_search', 'top');
+
 		add_rewrite_rule('^profile/([^/]+)/?', 'index.php?healthedia_profile=$matches[1]', 'top');
 		add_rewrite_rule('^u/([^/]+)/?', 'index.php?healthedia_username=$matches[1]', 'top');
 
@@ -57,6 +59,7 @@ class Healthedia_Router {
 		}
 
 		$page = get_query_var('healthedia_page');
+		if ($page == 'archive_search') return HEALTHEDIA_PLUGIN_DIR . 'public/views/page-archive-search.php';
 		if ($page == 'directory') return HEALTHEDIA_PLUGIN_DIR . 'public/views/page-directory.php';
 		if ($page == 'academies') return HEALTHEDIA_PLUGIN_DIR . 'public/views/page-academies.php';
 		if ($page == 'journal_archive') return HEALTHEDIA_PLUGIN_DIR . 'public/views/page-journal-archive.php';

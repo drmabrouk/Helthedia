@@ -31,23 +31,38 @@ class Healthedia_Search_Endpoints {
 
 		$results = $wpdb->get_results($wpdb->prepare($sql, $args));
 
-		foreach ($results as &$row) {
+		$formatted_results = array();
+		foreach ($results as $row) {
+			// Skip private profiles
+			if ($row->object_type === 'user') {
+				$is_private = get_user_meta($row->object_id, '_healthedia_is_private', true);
+				if ($is_private === 'yes') continue;
+			}
+
 			$raw_meta = json_decode($row->metadata, true);
 			$safe_meta = array();
+
+			$formatted_row = array(
+				'id' => $row->object_id,
+				'type' => $row->object_type,
+				'title' => $row->title
+			);
 
 			// Filter to only expose explicit, safe public metadata
 			if ($row->object_type === 'user') {
 				if (isset($raw_meta['_healthedia_specialty'])) $safe_meta['specialty'] = $raw_meta['_healthedia_specialty'][0];
 				if (isset($raw_meta['_healthedia_verified'])) $safe_meta['verified'] = $raw_meta['_healthedia_verified'][0];
-				$row->url = home_url('/profile/' . $row->object_id);
+				$username = get_user_meta($row->object_id, '_healthedia_username', true);
+				$formatted_row['url'] = $username ? home_url('/u/' . $username) : home_url('/profile/' . $row->object_id);
 			} else {
 				if (isset($raw_meta['_healthedia_doi'])) $safe_meta['doi'] = $raw_meta['_healthedia_doi'][0];
-				$row->url = get_permalink($row->object_id);
+				$formatted_row['url'] = get_permalink($row->object_id);
 			}
 
-			$row->metadata = $safe_meta; // Override with safe metadata only
+			$formatted_row['meta'] = $safe_meta;
+			$formatted_results[] = $formatted_row;
 		}
 
-		return rest_ensure_response(array('results' => $results));
+		return rest_ensure_response($formatted_results);
 	}
 }

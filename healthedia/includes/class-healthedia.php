@@ -53,6 +53,22 @@ class Healthedia {
 		$this->loader->add_action( 'init', $router, 'add_rewrite_rules' );
 		$this->loader->add_action( 'login_init', $router, 'redirect_wp_login' );
 		$this->loader->add_action( 'template_include', $router, 'load_templates' );
+
+		// Register Institution Custom Post Type
+		$this->loader->add_action('init', $this, 'register_institution_cpt');
+	}
+
+	public function register_institution_cpt() {
+		register_post_type('healthedia_inst', array(
+			'labels' => array(
+				'name' => 'Institutions',
+				'singular_name' => 'Institution'
+			),
+			'public' => true,
+			'has_archive' => false,
+			'show_in_rest' => true,
+			'supports' => array('title', 'editor')
+		));
 	}
 
 	private function init_modules() {

@@ -19,15 +19,28 @@ class Healthedia_Directory_Endpoints {
 			'order'   => 'ASC',
 			'number'  => $per_page,
 			'paged'   => $page,
+			'meta_query' => array(
+				'relation' => 'AND',
+				array(
+					'relation' => 'OR',
+					array(
+						'key'     => '_healthedia_is_private',
+						'compare' => 'NOT EXISTS',
+					),
+					array(
+						'key'     => '_healthedia_is_private',
+						'value'   => 'yes',
+						'compare' => '!=',
+					),
+				)
+			)
 		);
 
 		if (!empty($specialty)) {
-			$args['meta_query'] = array(
-				array(
-					'key' => '_healthedia_specialty',
-					'value' => $specialty,
-					'compare' => '='
-				)
+			$args['meta_query'][] = array(
+				'key' => '_healthedia_specialty',
+				'value' => $specialty,
+				'compare' => '='
 			);
 		}
 
@@ -39,6 +52,7 @@ class Healthedia_Directory_Endpoints {
 			require_once HEALTHEDIA_PLUGIN_DIR . 'modules/Profiles/class-profile-model.php';
 			require_once HEALTHEDIA_PLUGIN_DIR . 'modules/Profiles/class-profile-verification.php';
 			$metrics = Healthedia_Profile_Model::get_metrics($user->ID);
+			$username = get_user_meta($user->ID, '_healthedia_username', true);
 
 			$data[] = array(
 				'id' => $user->ID,
@@ -46,7 +60,7 @@ class Healthedia_Directory_Endpoints {
 				'specialty' => get_user_meta($user->ID, '_healthedia_specialty', true),
 				'verified' => Healthedia_Profile_Verification::is_verified($user->ID),
 				'views' => $metrics->views,
-				'url' => home_url('/profile/' . $user->ID)
+				'url' => $username ? home_url('/u/' . $username) : home_url('/profile/' . $user->ID)
 			);
 		}
 

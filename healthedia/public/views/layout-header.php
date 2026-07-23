@@ -20,6 +20,16 @@
 
 			<a href="<?php echo home_url(); ?>" class="font-sans font-bold text-xl tracking-tighter uppercase z-50">Healthedia</a>
 
+			<!-- Search Form -->
+			<div class="hidden md:block flex-grow max-w-sm mx-8 relative">
+				<form action="<?php echo home_url('/archive-search'); ?>" method="GET" class="w-full">
+					<input type="text" name="q" placeholder="Search archive..." class="w-full bg-gray-50 border border-[#E0E0E0] rounded-full py-1.5 px-4 pr-10 font-sans text-sm outline-none focus:border-black focus:bg-white transition-colors">
+					<button type="submit" class="absolute right-3 top-1.5 text-gray-400 hover:text-black">
+						<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+					</button>
+				</form>
+			</div>
+
 			<!-- Desktop Nav -->
 			<nav class="hidden md:flex items-center gap-6 font-mono text-sm uppercase tracking-wider ml-auto mr-6">
 				<a href="<?php echo home_url('/journal'); ?>" class="text-gray-500 hover:text-black transition-colors">Journal</a>
