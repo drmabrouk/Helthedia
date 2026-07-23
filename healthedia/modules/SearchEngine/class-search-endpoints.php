@@ -11,7 +11,7 @@ class Healthedia_Search_Endpoints {
 	public function do_search($request) {
 		global $wpdb;
 		$query = sanitize_text_field($request->get_param('q'));
-		$type = sanitize_text_field($request->get_param('type')); // e.g., 'healthedia_article', 'user'
+		$type = sanitize_text_field($request->get_param('type'));
 
 		if (empty($query)) {
 			return rest_ensure_response(array('results' => []));
@@ -31,14 +31,21 @@ class Healthedia_Search_Endpoints {
 
 		$results = $wpdb->get_results($wpdb->prepare($sql, $args));
 
-		// Map metadata JSON back to array for API response
 		foreach ($results as &$row) {
-			$row->metadata = json_decode($row->metadata, true);
+			$raw_meta = json_decode($row->metadata, true);
+			$safe_meta = array();
+
+			// Filter to only expose explicit, safe public metadata
 			if ($row->object_type === 'user') {
+				if (isset($raw_meta['_healthedia_specialty'])) $safe_meta['specialty'] = $raw_meta['_healthedia_specialty'][0];
+				if (isset($raw_meta['_healthedia_verified'])) $safe_meta['verified'] = $raw_meta['_healthedia_verified'][0];
 				$row->url = home_url('/profile/' . $row->object_id);
 			} else {
+				if (isset($raw_meta['_healthedia_doi'])) $safe_meta['doi'] = $raw_meta['_healthedia_doi'][0];
 				$row->url = get_permalink($row->object_id);
 			}
+
+			$row->metadata = $safe_meta; // Override with safe metadata only
 		}
 
 		return rest_ensure_response(array('results' => $results));

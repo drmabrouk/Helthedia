@@ -13,6 +13,94 @@ const escapeHTML = (str) => {
 
 document.addEventListener('DOMContentLoaded', () => {
 
+	// Manuscript Submission Logic
+	const msForm = document.getElementById('form-submit-manuscript');
+	if (msForm) {
+		const msFile = document.getElementById('ms-file');
+		const msFileName = document.getElementById('ms-file-name');
+
+		msFile.addEventListener('change', (e) => {
+			if(e.target.files.length > 0) {
+				msFileName.innerText = 'Selected: ' + e.target.files[0].name;
+				msFileName.classList.add('text-black', 'font-bold');
+			}
+		});
+
+		msForm.addEventListener('submit', (e) => {
+			e.preventDefault();
+			const btn = document.getElementById('btn-submit-ms');
+			const status = document.getElementById('ms-status');
+
+			btn.innerText = 'Uploading...';
+			btn.disabled = true;
+			status.classList.add('hidden');
+
+			const formData = new FormData();
+			formData.append('title', document.getElementById('ms-title').value);
+			formData.append('abstract', document.getElementById('ms-abstract').value);
+			formData.append('specialty', document.getElementById('ms-specialty').value);
+			formData.append('nct', document.getElementById('ms-nct').value);
+			formData.append('manuscript', msFile.files[0]);
+
+			// We need the nonce for authenticated requests.
+			// We can get it if we print it in the header for logged in users.
+			const nonce = window.healthediaPublicSettings?.nonce || '';
+
+			fetch('/wp-json/healthedia/v1/manuscript/submit', {
+				method: 'POST',
+				headers: {
+					'X-WP-Nonce': nonce
+				},
+				body: formData
+			})
+			.then(res => res.json())
+			.then(data => {
+				btn.innerText = 'Submit to Editorial Board';
+				btn.disabled = false;
+				status.classList.remove('hidden', 'bg-red-50', 'text-red-600');
+
+				if(data.success) {
+					status.classList.add('bg-green-50', 'text-green-700', 'border', 'border-green-200');
+					status.innerText = data.message;
+					msForm.reset();
+					msFileName.innerText = 'Accepted formats: .PDF, .DOCX (Max 20MB)';
+					msFileName.classList.remove('text-black', 'font-bold');
+				} else {
+					status.classList.add('bg-red-50', 'text-red-600', 'border', 'border-red-200');
+					status.innerText = data.message || 'Submission failed.';
+				}
+			})
+			.catch(() => {
+				btn.innerText = 'Submit to Editorial Board';
+				btn.disabled = false;
+				status.classList.remove('hidden');
+				status.classList.add('bg-red-50', 'text-red-600', 'border', 'border-red-200');
+				status.innerText = 'Network error during upload.';
+			});
+		});
+	}
+
+	// Mobile Off-Canvas Menu
+	const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+	const mobileMenuOverlay = document.getElementById('mobile-menu-overlay');
+	let menuOpen = false;
+
+	if (mobileMenuBtn && mobileMenuOverlay) {
+		mobileMenuBtn.addEventListener('click', () => {
+			menuOpen = !menuOpen;
+			if (menuOpen) {
+				mobileMenuOverlay.classList.remove('translate-x-full');
+				document.body.style.overflow = 'hidden'; // Prevent background scrolling
+				mobileMenuBtn.innerHTML = '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>';
+			} else {
+				mobileMenuOverlay.classList.add('translate-x-full');
+				document.body.style.overflow = '';
+				mobileMenuBtn.innerHTML = '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>';
+			}
+		});
+	}
+
+
 	// Accessibility Typography (Zoom)
 	const articleContent = document.querySelector('.article-content');
 	if (articleContent) {
