@@ -10,6 +10,7 @@ const escapeHTML = (str) => {
 		}[tag] || tag)
 	);
 };
+
 document.addEventListener('DOMContentLoaded', () => {
 
 	// Accessibility Typography (Zoom)
@@ -48,7 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
 						li.className = 'px-6 py-3 hover:bg-gray-50 border-b border-[#E0E0E0] last:border-0 transition-colors';
 						li.innerHTML = `
 							<a href="${result.url}" class="block">
-								<div class="font-bold text-black font-sans">' + escapeHTML(result.title) + '</div>
+								<div class="font-bold text-black font-sans">${escapeHTML(result.title)}</div>
 								<div class="font-mono text-[10px] text-gray-500 uppercase tracking-widest mt-1">${result.object_type}</div>
 							</a>
 						`;
@@ -85,11 +86,9 @@ document.addEventListener('DOMContentLoaded', () => {
 		const searchTags = document.querySelectorAll('.search-tag');
 		searchTags.forEach(tag => {
 			tag.addEventListener('click', (e) => {
-				// Reset all tags
 				searchTags.forEach(t => t.classList.remove('bg-black', 'text-white', 'border-black'));
 				searchTags.forEach(t => t.classList.add('text-gray-500', 'border-[#E0E0E0]'));
 
-				// Set active tag
 				e.target.classList.remove('text-gray-500', 'border-[#E0E0E0]');
 				e.target.classList.add('bg-black', 'text-white', 'border-black');
 
@@ -105,11 +104,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
 	// Directory Grid Fetching
 	const dirGrid = document.getElementById('directory-grid');
+	const dirCount = document.getElementById('dir-count');
 	if (dirGrid) {
 		fetch('/wp-json/healthedia/v1/directories/researchers')
 			.then(res => res.json())
 			.then(response => {
 				dirGrid.innerHTML = '';
+				if (dirCount) dirCount.innerText = response.total || 0;
 				if (!response.data || response.data.length === 0) {
 					dirGrid.innerHTML = '<div class="col-span-full text-center py-12 font-mono text-sm text-gray-500">No researchers found.</div>';
 					return;
@@ -117,15 +118,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
 				response.data.forEach(user => {
 					const card = document.createElement('div');
-					card.className = 'border border-[#E0E0E0] rounded-xl p-6 hover:border-black transition-colors bg-white shadow-sm hover:shadow-md';
+					card.className = 'border border-[#E0E0E0] rounded-2xl p-6 hover:border-black transition-colors bg-white shadow-sm flex flex-col items-center text-center';
 					card.innerHTML = `
-						<div class="flex items-center gap-2 mb-2">
-							<a href="${user.url}" class="font-sans font-bold text-lg hover:underline truncate">' + escapeHTML(user.name) + '</a>
-							${user.verified ? '<span class="bg-black text-white px-1.5 py-0.5 rounded text-[10px] font-mono uppercase tracking-widest">Verified</span>' : ''}
+						<div class="w-16 h-16 bg-gray-100 rounded-full mb-4 flex items-center justify-center text-gray-400 font-sans font-bold text-xl border border-[#E0E0E0]">
+							${escapeHTML(user.name).charAt(0)}
 						</div>
-						<div class="font-mono text-xs text-gray-500 uppercase truncate mb-4">${user.specialty || 'Independent Researcher'}</div>
-						<div class="flex gap-4 font-mono text-xs text-gray-400 border-t border-[#E0E0E0] pt-4 mt-4">
-							<div><span class="text-black font-bold">${user.views}</span> VIEWS</div>
+						<div class="flex items-center justify-center gap-1.5 mb-1 w-full">
+							<a href="${user.url}" class="font-sans font-bold text-xl hover:underline truncate">${escapeHTML(user.name)}</a>
+							${user.verified ? '<svg class="w-4 h-4 text-blue-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>' : ''}
+						</div>
+
+						<div class="bg-gray-50 border border-[#E0E0E0] rounded-xl p-3 w-full mt-4">
+							<div class="font-mono text-[10px] text-gray-500 uppercase tracking-widest truncate mb-1">Spec: ${escapeHTML(user.specialty || 'Independent')}</div>
+							<div class="font-mono text-[10px] text-gray-400 uppercase tracking-widest truncate">Views: <span class="text-black font-bold">${user.views}</span></div>
 						</div>
 					`;
 					dirGrid.appendChild(card);
@@ -142,6 +147,24 @@ document.addEventListener('DOMContentLoaded', () => {
 	const authEmailInputPage = document.getElementById('auth-email-page');
 
 	if (authFormEmailPage) {
+		const tabLogin = document.getElementById('tab-login');
+		const tabRegister = document.getElementById('tab-register');
+
+		const switchTab = (active, inactive) => {
+			active.classList.replace('border-transparent', 'border-black');
+			active.classList.replace('text-gray-400', 'text-black');
+			active.classList.add('font-bold');
+
+			inactive.classList.replace('border-black', 'border-transparent');
+			inactive.classList.replace('text-black', 'text-gray-400');
+			inactive.classList.remove('font-bold');
+		};
+
+		if(tabLogin && tabRegister) {
+			tabLogin.addEventListener('click', () => switchTab(tabLogin, tabRegister));
+			tabRegister.addEventListener('click', () => switchTab(tabRegister, tabLogin));
+		}
+
 		authFormEmailPage.addEventListener('submit', (e) => {
 			e.preventDefault();
 			const email = authEmailInputPage.value;

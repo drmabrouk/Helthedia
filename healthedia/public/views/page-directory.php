@@ -6,28 +6,43 @@
 			<h1 class="text-4xl font-sans font-bold uppercase tracking-tight mb-2">Global Directory of Researchers</h1>
 			<p class="font-mono text-sm text-gray-500 uppercase">Verified academic and clinical professionals</p>
 		</div>
+		<div>
+			<button class="bg-black text-white px-6 py-3 rounded-full font-sans uppercase text-sm tracking-wide hover:bg-gray-800 transition-colors">Become a Researcher</button>
+		</div>
+	</div>
 
-		<div class="flex gap-2">
-			<select id="filter-specialty" class="border border-[#E0E0E0] rounded-full px-4 py-2 text-sm font-sans outline-none focus:border-black cursor-pointer bg-white">
-				<option value="">All Specialties</option>
-				<option value="cardiology">Cardiology</option>
-				<option value="neurology">Neurology</option>
-				<option value="biomechanics">Biomechanics</option>
-			</select>
-			<button class="bg-black text-white px-6 py-2 rounded-full font-sans uppercase text-sm tracking-wide hover:bg-gray-800 transition-colors">Filter</button>
+	<!-- Filter Toolbar -->
+	<div class="flex flex-col md:flex-row gap-4 mb-8 items-center bg-gray-50 p-4 rounded-2xl border border-[#E0E0E0]">
+		<input type="text" placeholder="Search by name..." class="flex-grow border border-[#E0E0E0] rounded-full px-6 py-2.5 text-sm font-sans outline-none focus:border-black bg-white">
+		<select class="border border-[#E0E0E0] rounded-full px-6 py-2.5 text-sm font-sans outline-none focus:border-black cursor-pointer bg-white">
+			<option value="">All Specialties</option>
+			<option value="cardiology">Cardiology</option>
+			<option value="neurology">Neurology</option>
+			<option value="biomechanics">Biomechanics</option>
+		</select>
+		<select class="border border-[#E0E0E0] rounded-full px-6 py-2.5 text-sm font-sans outline-none focus:border-black cursor-pointer bg-white">
+			<option value="">All Countries</option>
+			<option value="us">United States</option>
+			<option value="uk">United Kingdom</option>
+		</select>
+		<label class="flex items-center gap-2 font-mono text-xs uppercase cursor-pointer">
+			<input type="checkbox" checked class="accent-black w-4 h-4 cursor-pointer">
+			<span>Verified Only</span>
+		</label>
+		<div class="font-mono text-xs uppercase bg-white border border-[#E0E0E0] px-4 py-2.5 rounded-full whitespace-nowrap ml-auto">
+			Showing <span id="dir-count">0</span> Results
 		</div>
 	</div>
 
 	<!-- Directory Grid -->
-	<div id="directory-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-		<!-- Populated via JS / REST API -->
-		<div class="col-span-full text-center py-12 font-mono text-sm text-gray-500">Loading directory data...</div>
+	<div id="directory-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+		<div class="col-span-full text-center py-12 font-mono text-sm text-gray-500 animate-pulse">Loading directory data...</div>
 	</div>
 
 	<!-- Pagination -->
 	<div class="mt-12 flex justify-center gap-2">
-		<button class="px-4 py-2 border border-[#E0E0E0] rounded font-mono text-sm hover:border-black transition-colors disabled:opacity-50">Prev</button>
-		<button class="px-4 py-2 border border-[#E0E0E0] rounded font-mono text-sm hover:border-black transition-colors disabled:opacity-50">Next</button>
+		<button class="px-6 py-2 border border-[#E0E0E0] rounded-full font-mono text-sm uppercase hover:border-black transition-colors disabled:opacity-50">Previous</button>
+		<button class="px-6 py-2 border border-[#E0E0E0] rounded-full font-mono text-sm uppercase hover:border-black transition-colors disabled:opacity-50">Next Page</button>
 	</div>
 
 </div>

@@ -4,12 +4,12 @@ class Healthedia_Router {
 		// Dashboard routing
 		add_rewrite_rule('^healthedia-admin/?', 'index.php?healthedia_dashboard=1', 'top');
 		add_rewrite_rule('^healthedia-admin/(.*)?', 'index.php?healthedia_dashboard=1', 'top');
-		add_rewrite_rule('^dashboard/?', 'index.php?healthedia_dashboard=1', 'top'); // Handle the auto-provisioned dashboard page slug
+		add_rewrite_rule('^dashboard/?', 'index.php?healthedia_dashboard=1', 'top');
 
 		// Auth pages
 		add_rewrite_rule('^login/?', 'index.php?healthedia_auth_page=1', 'top');
 		add_rewrite_rule('^register/?', 'index.php?healthedia_auth_page=1', 'top');
-		add_rewrite_rule('^auth/?', 'index.php?healthedia_auth_page=1', 'top'); // Handle the auto-provisioned auth page slug
+		add_rewrite_rule('^auth/?', 'index.php?healthedia_auth_page=1', 'top');
 
 		// Directories
 		add_rewrite_rule('^directory/?', 'index.php?healthedia_page=directory', 'top');
@@ -34,6 +34,13 @@ class Healthedia_Router {
 		add_rewrite_tag('%healthedia_auth_page%', '1');
 		add_rewrite_tag('%healthedia_page%', '([^&]+)');
 		add_rewrite_tag('%healthedia_profile%', '([^&]+)');
+	}
+
+	public function redirect_wp_login() {
+		if ( !isset($_REQUEST['action']) || $_REQUEST['action'] === 'login' ) {
+			wp_redirect( home_url( '/login' ) );
+			die();
+		}
 	}
 
 	public function load_templates($template) {
@@ -84,13 +91,17 @@ class Healthedia_Router {
 			return HEALTHEDIA_PLUGIN_DIR . 'public/views/single-profile.php';
 		}
 
-		// Legal/Support fallback (letting WP handle them natively, or rendering custom)
 		global $post;
 		if (isset($post->post_name) && in_array($post->post_name, ['privacy-policy', 'terms-of-service', 'publication-policies', 'certificate-verification', 'support'])) {
+			if ($post->post_name === 'certificate-verification') {
+				return HEALTHEDIA_PLUGIN_DIR . 'public/views/page-certificate-verification.php';
+			}
+			if ($post->post_name === 'support') {
+				return HEALTHEDIA_PLUGIN_DIR . 'public/views/page-support.php';
+			}
 			return HEALTHEDIA_PLUGIN_DIR . 'public/views/page-legal.php';
 		}
 
-		// If on homepage, check if we want to replace with gateway
 		if (is_front_page() || is_home() || (isset($post->post_name) && $post->post_name === 'gateway')) {
 			return HEALTHEDIA_PLUGIN_DIR . 'public/views/page-gateway.php';
 		}
