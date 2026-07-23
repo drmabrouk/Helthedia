@@ -1,8 +1,13 @@
 <?php
 class Healthedia_Profile_Model {
 	public function track_views() {
-		if ( get_query_var('healthedia_profile') ) {
-			$user_id = get_query_var('healthedia_profile');
+		$user_id = get_query_var('healthedia_profile');
+		if (!$user_id && get_query_var('healthedia_profile_user')) {
+			$user_obj = get_query_var('healthedia_profile_user');
+			$user_id = $user_obj->ID;
+		}
+
+		if ( $user_id ) {
 			if ( is_numeric($user_id) && get_userdata($user_id) ) {
 				global $wpdb;
 				$table = $wpdb->prefix . 'healthedia_metrics';

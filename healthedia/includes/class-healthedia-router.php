@@ -15,6 +15,7 @@ class Healthedia_Router {
 		add_rewrite_rule('^journal/?', 'index.php?healthedia_page=journal_archive', 'top');
 
 		add_rewrite_rule('^profile/([^/]+)/?', 'index.php?healthedia_profile=$matches[1]', 'top');
+		add_rewrite_rule('^u/([^/]+)/?', 'index.php?healthedia_username=$matches[1]', 'top');
 
 		add_rewrite_rule('^account-settings/?', 'index.php?healthedia_page=member_settings', 'top');
 		add_rewrite_rule('^saved-research/?', 'index.php?healthedia_page=member_saved', 'top');
@@ -26,6 +27,7 @@ class Healthedia_Router {
 		add_rewrite_tag('%healthedia_auth_page%', '1');
 		add_rewrite_tag('%healthedia_page%', '([^&]+)');
 		add_rewrite_tag('%healthedia_profile%', '([^&]+)');
+		add_rewrite_tag('%healthedia_username%', '([^&]+)');
 	}
 
 	public function redirect_wp_login() {
@@ -80,7 +82,47 @@ class Healthedia_Router {
 			return HEALTHEDIA_PLUGIN_DIR . 'public/views/single-profile.php';
 		}
 
-		global $post;
+		global $post, $wp_query;
+
+		// Custom Root-level Username Routing
+		$request_path = trim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), '/');
+		// Remove WP subdirectory if installed in one
+		$home_path = trim(parse_url(home_url(), PHP_URL_PATH), '/');
+		if ($home_path && strpos($request_path, $home_path) === 0) {
+			$request_path = trim(substr($request_path, strlen($home_path)), '/');
+		}
+
+		// If it's a simple one-level path and not a known page, check if it's a username
+		if (!empty($request_path) && strpos($request_path, '/') === false) {
+			$user = get_user_by('slug', $request_path);
+			if (!$user) {
+				// Try checking custom meta if we use it, or user_login
+				$user = get_user_by('login', $request_path);
+			}
+			if (!$user) {
+				// Also check custom meta _healthedia_username
+				$users = get_users(array(
+					'meta_key' => '_healthedia_username',
+					'meta_value' => $request_path,
+					'number' => 1
+				));
+				if (!empty($users)) $user = $users[0];
+			}
+
+			if ($user) {
+				// Prevent 404
+				$wp_query->is_404 = false;
+				status_header(200);
+				set_query_var('healthedia_username', $request_path);
+				set_query_var('healthedia_profile_user', $user);
+				return HEALTHEDIA_PLUGIN_DIR . 'public/views/single-profile.php';
+			}
+		}
+
+		$username = get_query_var('healthedia_username');
+		if ($username) {
+			return HEALTHEDIA_PLUGIN_DIR . 'public/views/single-profile.php';
+		}
 		if (isset($post->post_name) && in_array($post->post_name, ['privacy-policy', 'terms-of-service', 'publication-policies', 'certificate-verification', 'support'])) {
 			if ($post->post_name === 'certificate-verification') return HEALTHEDIA_PLUGIN_DIR . 'public/views/page-certificate-verification.php';
 			if ($post->post_name === 'support') return HEALTHEDIA_PLUGIN_DIR . 'public/views/page-support.php';
