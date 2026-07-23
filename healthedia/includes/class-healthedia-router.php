@@ -5,9 +5,9 @@ class Healthedia_Router {
 		add_rewrite_rule('^healthedia-admin/?', 'index.php?healthedia_dashboard=1', 'top');
 		add_rewrite_rule('^healthedia-admin/(.*)?', 'index.php?healthedia_dashboard=1', 'top');
 
-		// Auth endpoints
-		add_rewrite_rule('^auth/login/?', 'index.php?healthedia_auth=login', 'top');
-		add_rewrite_rule('^auth/verify/?', 'index.php?healthedia_auth=verify', 'top');
+		// Auth pages
+		add_rewrite_rule('^login/?', 'index.php?healthedia_auth_page=1', 'top');
+		add_rewrite_rule('^register/?', 'index.php?healthedia_auth_page=1', 'top');
 
 		// Directories & Articles
 		add_rewrite_rule('^directories/?', 'index.php?healthedia_page=directory', 'top');
@@ -18,7 +18,7 @@ class Healthedia_Router {
 
 		// Tags for query vars
 		add_rewrite_tag('%healthedia_dashboard%', '1');
-		add_rewrite_tag('%healthedia_auth%', '([^&]+)');
+		add_rewrite_tag('%healthedia_auth_page%', '1');
 		add_rewrite_tag('%healthedia_page%', '([^&]+)');
 		add_rewrite_tag('%healthedia_profile%', '([^&]+)');
 	}
@@ -29,12 +29,21 @@ class Healthedia_Router {
 			return HEALTHEDIA_PLUGIN_DIR . 'dashboard/views/app.php';
 		}
 
+		$auth_page = get_query_var('healthedia_auth_page');
+		if ($auth_page) {
+			if (is_user_logged_in()) {
+				wp_redirect(home_url());
+				die();
+			}
+			return HEALTHEDIA_PLUGIN_DIR . 'public/views/page-auth.php';
+		}
+
 		$page = get_query_var('healthedia_page');
 		if ($page == 'directory') {
 			return HEALTHEDIA_PLUGIN_DIR . 'public/views/page-directory.php';
 		}
 		if ($page == 'journal') {
-			return HEALTHEDIA_PLUGIN_DIR . 'public/views/single-article.php'; // Or gateway/index depending on setup
+			return HEALTHEDIA_PLUGIN_DIR . 'public/views/single-article.php';
 		}
 
 		$profile = get_query_var('healthedia_profile');
@@ -44,7 +53,6 @@ class Healthedia_Router {
 
 		// If on homepage, check if we want to replace with gateway
 		if (is_front_page() || is_home()) {
-			// For this plugin, we hijack the front page for the Central Gateway
 			return HEALTHEDIA_PLUGIN_DIR . 'public/views/page-gateway.php';
 		}
 

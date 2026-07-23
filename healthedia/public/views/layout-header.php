@@ -9,7 +9,7 @@
 	<title><?php wp_title('|', true, 'right'); ?></title>
 	<?php wp_head(); ?>
 </head>
-<body <?php body_class('bg-white text-[#111111] antialiased'); ?>>
+<body <?php body_class('bg-white text-[#111111] antialiased min-h-screen flex flex-col'); ?>>
 
 	<!-- Global Header (Archival Minimalist) -->
 	<header class="border-b border-[#E0E0E0] sticky top-0 bg-white/90 backdrop-blur-sm z-40">
@@ -23,10 +23,19 @@
 
 			<div class="flex items-center gap-4">
 				<?php if ( is_user_logged_in() ) : ?>
+					<?php if ( current_user_can( 'manage_options' ) ) : ?>
+						<a href="<?php echo home_url('/healthedia-admin'); ?>" class="font-mono text-xs uppercase tracking-wider bg-blue-900 text-white px-3 py-1 rounded-full hover:bg-blue-800 transition-colors flex items-center gap-1">
+							<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V10"></path><path d="M18 20V4"></path><path d="M6 20v-4"></path></svg>
+							Dashboard
+						</a>
+					<?php endif; ?>
 					<a href="<?php echo home_url('/profile/' . get_current_user_id()); ?>" class="font-mono text-xs uppercase tracking-wider border border-[#E0E0E0] px-3 py-1 rounded-full hover:border-black transition-colors">My Profile</a>
 				<?php else: ?>
-					<button onclick="document.getElementById('healthedia-auth-modal').classList.remove('hidden')" class="font-mono text-xs uppercase tracking-wider bg-black text-white px-4 py-1.5 rounded-full hover:bg-gray-800 transition-colors">Login / Register</button>
+					<a href="<?php echo home_url('/login'); ?>" class="font-mono text-xs uppercase tracking-wider bg-black text-white px-4 py-1.5 rounded-full hover:bg-gray-800 transition-colors">Login / Register</a>
 				<?php endif; ?>
 			</div>
 		</div>
 	</header>
+
+	<!-- Main Content Wrapper -->
+	<div class="flex-grow">

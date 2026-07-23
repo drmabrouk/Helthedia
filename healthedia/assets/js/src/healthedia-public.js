@@ -23,6 +23,9 @@ document.addEventListener('DOMContentLoaded', () => {
 	let currentTypeFilter = '';
 
 	const performSearch = (query, type) => {
+		gatewaySearchList.innerHTML = '<li class="px-6 py-4 text-gray-500 font-mono text-sm text-center animate-pulse">Searching archive...</li>';
+		gatewaySearchResults.classList.remove('hidden');
+
 		fetch(`/wp-json/healthedia/v1/search?q=${encodeURIComponent(query)}&type=${encodeURIComponent(type)}`)
 			.then(res => res.json())
 			.then(data => {
@@ -30,20 +33,21 @@ document.addEventListener('DOMContentLoaded', () => {
 				if (data.results && data.results.length > 0) {
 					data.results.forEach(result => {
 						const li = document.createElement('li');
-						li.className = 'px-6 py-3 hover:bg-gray-50 border-b border-[#E0E0E0] last:border-0';
+						li.className = 'px-6 py-3 hover:bg-gray-50 border-b border-[#E0E0E0] last:border-0 transition-colors';
 						li.innerHTML = `
 							<a href="${result.url}" class="block">
-								<div class="font-bold text-black">${result.title}</div>
-								<div class="font-mono text-xs text-gray-500 uppercase">${result.object_type}</div>
+								<div class="font-bold text-black font-sans">${result.title}</div>
+								<div class="font-mono text-[10px] text-gray-500 uppercase tracking-widest mt-1">${result.object_type}</div>
 							</a>
 						`;
 						gatewaySearchList.appendChild(li);
 					});
-					gatewaySearchResults.classList.remove('hidden');
 				} else {
-					gatewaySearchList.innerHTML = '<li class="px-6 py-4 text-gray-500 font-mono text-sm text-center">No results found</li>';
-					gatewaySearchResults.classList.remove('hidden');
+					gatewaySearchList.innerHTML = '<li class="px-6 py-4 text-gray-500 font-mono text-sm text-center">No results found in archive.</li>';
 				}
+			})
+			.catch(() => {
+				gatewaySearchList.innerHTML = '<li class="px-6 py-4 text-red-500 font-mono text-sm text-center">Error communicating with server.</li>';
 			});
 	};
 
@@ -70,12 +74,12 @@ document.addEventListener('DOMContentLoaded', () => {
 		searchTags.forEach(tag => {
 			tag.addEventListener('click', (e) => {
 				// Reset all tags
-				searchTags.forEach(t => t.classList.remove('bg-black', 'text-white'));
-				searchTags.forEach(t => t.classList.add('text-gray-500'));
+				searchTags.forEach(t => t.classList.remove('bg-black', 'text-white', 'border-black'));
+				searchTags.forEach(t => t.classList.add('text-gray-500', 'border-[#E0E0E0]'));
 
 				// Set active tag
-				e.target.classList.remove('text-gray-500');
-				e.target.classList.add('bg-black', 'text-white');
+				e.target.classList.remove('text-gray-500', 'border-[#E0E0E0]');
+				e.target.classList.add('bg-black', 'text-white', 'border-black');
 
 				currentTypeFilter = e.target.getAttribute('data-type');
 
@@ -101,15 +105,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
 				response.data.forEach(user => {
 					const card = document.createElement('div');
-					card.className = 'border border-[#E0E0E0] rounded-xl p-6 hover:border-black transition-colors bg-white';
+					card.className = 'border border-[#E0E0E0] rounded-xl p-6 hover:border-black transition-colors bg-white shadow-sm hover:shadow-md';
 					card.innerHTML = `
 						<div class="flex items-center gap-2 mb-2">
 							<a href="${user.url}" class="font-sans font-bold text-lg hover:underline truncate">${user.name}</a>
 							${user.verified ? '<span class="bg-black text-white px-1.5 py-0.5 rounded text-[10px] font-mono uppercase tracking-widest">Verified</span>' : ''}
 						</div>
-						<div class="font-mono text-xs text-gray-500 uppercase truncate mb-4">${user.specialty || 'Independent'}</div>
-						<div class="flex gap-4 font-mono text-xs text-gray-400">
-							<div><span class="text-black font-bold">${user.views}</span> views</div>
+						<div class="font-mono text-xs text-gray-500 uppercase truncate mb-4">${user.specialty || 'Independent Researcher'}</div>
+						<div class="flex gap-4 font-mono text-xs text-gray-400 border-t border-[#E0E0E0] pt-4 mt-4">
+							<div><span class="text-black font-bold">${user.views}</span> VIEWS</div>
 						</div>
 					`;
 					dirGrid.appendChild(card);
@@ -120,52 +124,64 @@ document.addEventListener('DOMContentLoaded', () => {
 			});
 	}
 
-	// Auth Modal Logic
-	const authFormEmail = document.getElementById('auth-form-email');
-	const authFormOtp = document.getElementById('auth-form-otp');
-	const authEmailInput = document.getElementById('auth-email');
-	const authModal = document.getElementById('healthedia-auth-modal');
-	const authClose = document.getElementById('auth-close');
+	// Dedicated Auth Page Logic
+	const authFormEmailPage = document.getElementById('auth-form-email-page');
+	const authFormOtpPage = document.getElementById('auth-form-otp-page');
+	const authEmailInputPage = document.getElementById('auth-email-page');
 
-	if (authClose && authModal) {
-		authClose.addEventListener('click', () => {
-			authModal.classList.add('hidden');
-		});
-	}
-
-	if (authFormEmail) {
-		authFormEmail.addEventListener('submit', (e) => {
+	if (authFormEmailPage) {
+		authFormEmailPage.addEventListener('submit', (e) => {
 			e.preventDefault();
-			const email = authEmailInput.value;
+			const email = authEmailInputPage.value;
+			const btn = document.getElementById('btn-request-otp');
+			const originalText = btn.innerHTML;
+			btn.innerHTML = '<span class="animate-pulse">Processing...</span>';
+			btn.disabled = true;
+
 			fetch('/wp-json/healthedia/v1/auth/request-otp', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ email })
 			}).then(res => res.json()).then(data => {
+				btn.innerHTML = originalText;
+				btn.disabled = false;
 				if (data.success) {
-					authFormEmail.classList.add('hidden');
-					authFormOtp.classList.remove('hidden');
+					authFormEmailPage.classList.add('hidden');
+					authFormOtpPage.classList.remove('hidden');
 				} else {
 					alert(data.message || 'Error requesting OTP.');
 				}
+			}).catch(() => {
+				btn.innerHTML = originalText;
+				btn.disabled = false;
+				alert('Network error requesting OTP.');
 			});
 		});
 
-		authFormOtp.addEventListener('submit', (e) => {
+		authFormOtpPage.addEventListener('submit', (e) => {
 			e.preventDefault();
-			const email = authEmailInput.value;
-			const otp = document.getElementById('auth-otp').value;
+			const email = authEmailInputPage.value;
+			const otp = document.getElementById('auth-otp-page').value;
 			fetch('/wp-json/healthedia/v1/auth/verify-otp', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ email, otp })
 			}).then(res => res.json()).then(data => {
 				if (data.success) {
-					window.location.reload();
+					window.location.href = '/';
 				} else {
 					alert(data.message || 'Invalid OTP.');
 				}
-			});
+			}).catch(() => alert('Network error verifying OTP.'));
 		});
+
+		const btnResend = document.getElementById('btn-resend-otp');
+		if (btnResend) {
+			btnResend.addEventListener('click', () => {
+				authFormOtpPage.classList.add('hidden');
+				authFormEmailPage.classList.remove('hidden');
+				document.getElementById('auth-otp-page').value = '';
+			});
+		}
 	}
 });
