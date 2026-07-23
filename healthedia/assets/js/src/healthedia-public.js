@@ -1,3 +1,15 @@
+const escapeHTML = (str) => {
+	if (!str) return '';
+	return String(str).replace(/[&<>'"]/g,
+		tag => ({
+			'&': '&amp;',
+			'<': '&lt;',
+			'>': '&gt;',
+			"'": '&#39;',
+			'"': '&quot;'
+		}[tag] || tag)
+	);
+};
 document.addEventListener('DOMContentLoaded', () => {
 
 	// Accessibility Typography (Zoom)
@@ -36,7 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
 						li.className = 'px-6 py-3 hover:bg-gray-50 border-b border-[#E0E0E0] last:border-0 transition-colors';
 						li.innerHTML = `
 							<a href="${result.url}" class="block">
-								<div class="font-bold text-black font-sans">${result.title}</div>
+								<div class="font-bold text-black font-sans">' + escapeHTML(result.title) + '</div>
 								<div class="font-mono text-[10px] text-gray-500 uppercase tracking-widest mt-1">${result.object_type}</div>
 							</a>
 						`;
@@ -108,7 +120,7 @@ document.addEventListener('DOMContentLoaded', () => {
 					card.className = 'border border-[#E0E0E0] rounded-xl p-6 hover:border-black transition-colors bg-white shadow-sm hover:shadow-md';
 					card.innerHTML = `
 						<div class="flex items-center gap-2 mb-2">
-							<a href="${user.url}" class="font-sans font-bold text-lg hover:underline truncate">${user.name}</a>
+							<a href="${user.url}" class="font-sans font-bold text-lg hover:underline truncate">' + escapeHTML(user.name) + '</a>
 							${user.verified ? '<span class="bg-black text-white px-1.5 py-0.5 rounded text-[10px] font-mono uppercase tracking-widest">Verified</span>' : ''}
 						</div>
 						<div class="font-mono text-xs text-gray-500 uppercase truncate mb-4">${user.specialty || 'Independent Researcher'}</div>

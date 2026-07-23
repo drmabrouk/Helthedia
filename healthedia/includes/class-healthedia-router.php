@@ -4,17 +4,30 @@ class Healthedia_Router {
 		// Dashboard routing
 		add_rewrite_rule('^healthedia-admin/?', 'index.php?healthedia_dashboard=1', 'top');
 		add_rewrite_rule('^healthedia-admin/(.*)?', 'index.php?healthedia_dashboard=1', 'top');
+		add_rewrite_rule('^dashboard/?', 'index.php?healthedia_dashboard=1', 'top'); // Handle the auto-provisioned dashboard page slug
 
 		// Auth pages
 		add_rewrite_rule('^login/?', 'index.php?healthedia_auth_page=1', 'top');
 		add_rewrite_rule('^register/?', 'index.php?healthedia_auth_page=1', 'top');
+		add_rewrite_rule('^auth/?', 'index.php?healthedia_auth_page=1', 'top'); // Handle the auto-provisioned auth page slug
 
-		// Directories & Articles
-		add_rewrite_rule('^directories/?', 'index.php?healthedia_page=directory', 'top');
-		add_rewrite_rule('^journal/?', 'index.php?healthedia_page=journal', 'top');
+		// Directories
+		add_rewrite_rule('^directory/?', 'index.php?healthedia_page=directory', 'top');
+		add_rewrite_rule('^academies/?', 'index.php?healthedia_page=academies', 'top');
+
+		// Journal
+		add_rewrite_rule('^journal/?', 'index.php?healthedia_page=journal_archive', 'top');
 
 		// Profile
 		add_rewrite_rule('^profile/([^/]+)/?', 'index.php?healthedia_profile=$matches[1]', 'top');
+
+		// Member Portal
+		add_rewrite_rule('^account-settings/?', 'index.php?healthedia_page=member_settings', 'top');
+		add_rewrite_rule('^saved-research/?', 'index.php?healthedia_page=member_saved', 'top');
+		add_rewrite_rule('^my-requests/?', 'index.php?healthedia_page=member_requests', 'top');
+
+		// Submissions
+		add_rewrite_rule('^submit-manuscript/?', 'index.php?healthedia_page=submit_manuscript', 'top');
 
 		// Tags for query vars
 		add_rewrite_tag('%healthedia_dashboard%', '1');
@@ -42,8 +55,28 @@ class Healthedia_Router {
 		if ($page == 'directory') {
 			return HEALTHEDIA_PLUGIN_DIR . 'public/views/page-directory.php';
 		}
-		if ($page == 'journal') {
-			return HEALTHEDIA_PLUGIN_DIR . 'public/views/single-article.php';
+		if ($page == 'academies') {
+			return HEALTHEDIA_PLUGIN_DIR . 'public/views/page-academies.php';
+		}
+		if ($page == 'journal_archive') {
+			return HEALTHEDIA_PLUGIN_DIR . 'public/views/page-journal-archive.php';
+		}
+
+		// Member Portal
+		if (in_array($page, ['member_settings', 'member_saved', 'member_requests'])) {
+			if (!is_user_logged_in()) {
+				wp_redirect(home_url('/login'));
+				die();
+			}
+			return HEALTHEDIA_PLUGIN_DIR . "public/views/page-{$page}.php";
+		}
+
+		if ($page == 'submit_manuscript') {
+			if (!is_user_logged_in()) {
+				wp_redirect(home_url('/login'));
+				die();
+			}
+			return HEALTHEDIA_PLUGIN_DIR . 'public/views/page-submit-manuscript.php';
 		}
 
 		$profile = get_query_var('healthedia_profile');
@@ -51,8 +84,14 @@ class Healthedia_Router {
 			return HEALTHEDIA_PLUGIN_DIR . 'public/views/single-profile.php';
 		}
 
+		// Legal/Support fallback (letting WP handle them natively, or rendering custom)
+		global $post;
+		if (isset($post->post_name) && in_array($post->post_name, ['privacy-policy', 'terms-of-service', 'publication-policies', 'certificate-verification', 'support'])) {
+			return HEALTHEDIA_PLUGIN_DIR . 'public/views/page-legal.php';
+		}
+
 		// If on homepage, check if we want to replace with gateway
-		if (is_front_page() || is_home()) {
+		if (is_front_page() || is_home() || (isset($post->post_name) && $post->post_name === 'gateway')) {
 			return HEALTHEDIA_PLUGIN_DIR . 'public/views/page-gateway.php';
 		}
 
