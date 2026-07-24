@@ -8,6 +8,7 @@ const Dashboard = () => {
 	const [researchers, setResearchers] = useState([]);
 	const [articles, setArticles] = useState([]);
 	const [certificates, setCertificates] = useState([]);
+	const [verificationRequests, setVerificationRequests] = useState([]);
 	const [settings, setSettings] = useState({ site_name: '', site_desc: '', admin_email: '', mock_data_seeded: false, enable_registration: 'yes', auth_maintenance_mode: 'no', privacy_policy_url: '', terms_url: '' });
 	const [loading, setLoading] = useState(true);
 	const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -55,6 +56,7 @@ const Dashboard = () => {
 			else if (activeTab === 'researchers') setResearchers(await apiFetch('researchers'));
 			else if (activeTab === 'articles') setArticles(await apiFetch('articles'));
 			else if (activeTab === 'certificates') setCertificates(await apiFetch('certificates'));
+			else if (activeTab === 'verifications') setVerificationRequests(await apiFetch('verifications'));
 			else if (activeTab === 'settings') setSettings(await apiFetch('settings'));
 		} catch (err) {
 			console.error(err);
@@ -188,6 +190,7 @@ const Dashboard = () => {
 					<button onClick={() => { setActiveTab('researchers'); closeSidebar(); }} className={`w-full text-left px-4 py-4 md:py-3 rounded-xl transition-colors ${activeTab === 'researchers' ? 'bg-black text-white' : 'text-gray-500 hover:bg-gray-50 hover:text-black'}`}>Researchers Mgmt</button>
 					<button onClick={() => { setActiveTab('articles'); closeSidebar(); }} className={`w-full text-left px-4 py-4 md:py-3 rounded-xl transition-colors ${activeTab === 'articles' ? 'bg-black text-white' : 'text-gray-500 hover:bg-gray-50 hover:text-black'}`}>Articles Mgmt</button>
 					<button onClick={() => { setActiveTab('certificates'); closeSidebar(); }} className={`w-full text-left px-4 py-4 md:py-3 rounded-xl transition-colors ${activeTab === 'certificates' ? 'bg-black text-white' : 'text-gray-500 hover:bg-gray-50 hover:text-black'}`}>Certificates</button>
+					<button onClick={() => { setActiveTab('verifications'); closeSidebar(); }} className={`w-full text-left px-4 py-4 md:py-3 rounded-xl transition-colors ${activeTab === 'verifications' ? 'bg-black text-white' : 'text-gray-500 hover:bg-gray-50 hover:text-black'}`}>Verify Requests</button>
 					<button onClick={() => { setActiveTab('settings'); closeSidebar(); }} className={`w-full text-left px-4 py-4 md:py-3 rounded-xl transition-colors ${activeTab === 'settings' ? 'bg-black text-white' : 'text-gray-500 hover:bg-gray-50 hover:text-black'}`}>Global Settings</button>
 				</nav>
 
@@ -445,6 +448,54 @@ const Dashboard = () => {
 											<td className="py-4 px-6 text-right space-x-2 whitespace-nowrap">
 												<button onClick={() => { setEditingCertificate(c); setShowCertificateModal(true); }} className="border border-[#E0E0E0] px-3 py-1 rounded font-mono text-[10px] uppercase hover:border-black transition-colors">Edit</button>
 												<button onClick={() => deleteCertificate(c.id)} className="border border-red-200 text-red-500 px-3 py-1 rounded font-mono text-[10px] uppercase hover:bg-red-50 transition-colors">Del</button>
+											</td>
+										</tr>
+									))}
+								</tbody>
+							</table>
+						</div>
+					</>
+				)}
+
+				{activeTab === 'verifications' && (
+					<>
+						<header className="mb-6 md:mb-8 border-b border-[#E0E0E0] pb-6 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+							<div>
+								<h2 className="text-2xl md:text-3xl font-bold uppercase tracking-tight">Verification Requests</h2>
+							</div>
+						</header>
+						<div className="bg-white border border-[#E0E0E0] rounded-2xl shadow-sm overflow-x-auto">
+							<table className="w-full text-left border-collapse min-w-[800px]">
+								<thead>
+									<tr className="bg-gray-50 border-b border-[#E0E0E0] font-mono text-[10px] uppercase tracking-widest text-gray-500">
+										<th className="py-4 px-6 font-normal">UID</th>
+										<th className="py-4 px-6 font-normal">Name</th>
+										<th className="py-4 px-6 font-normal">Specialty</th>
+										<th className="py-4 px-6 font-normal">Institution</th>
+										<th className="py-4 px-6 font-normal">Date Requested</th>
+										<th className="py-4 px-6 font-normal">Document</th>
+										<th className="py-4 px-6 font-normal text-right">Actions</th>
+									</tr>
+								</thead>
+								<tbody className="font-sans text-sm divide-y divide-[#E0E0E0]">
+									{verificationRequests.length === 0 ? (
+										<tr><td colSpan="7" className="py-8 text-center text-gray-500 font-mono text-xs">No pending requests.</td></tr>
+									) : verificationRequests.map(v => (
+										<tr key={v.id} className="hover:bg-gray-50 transition-colors">
+											<td className="py-4 px-6 font-mono text-xs text-gray-500">{v.id}</td>
+											<td className="py-4 px-6 font-bold">
+												{v.name}
+												<div className="font-mono text-[10px] font-normal text-gray-500">{v.email}</div>
+											</td>
+											<td className="py-4 px-6 font-mono text-xs">{v.specialty}</td>
+											<td className="py-4 px-6 font-mono text-xs">{v.institution}</td>
+											<td className="py-4 px-6 font-mono text-xs">{new Date(v.date * 1000).toLocaleString()}</td>
+											<td className="py-4 px-6">
+												{v.document_url ? <a href={v.document_url} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline flex items-center gap-1"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg> View</a> : 'None'}
+											</td>
+											<td className="py-4 px-6 text-right space-x-2 whitespace-nowrap">
+												<button onClick={async () => { if(window.confirm('Approve this request?')) { await apiFetch(`verifications/${v.id}/approve`, { method: 'POST' }); loadData(); } }} className="border border-green-200 text-green-600 px-3 py-1 rounded font-mono text-[10px] uppercase hover:bg-green-50 transition-colors">Approve</button>
+												<button onClick={async () => { const reason = window.prompt('Reason for rejection:'); if(reason !== null) { await apiFetch(`verifications/${v.id}/reject`, { method: 'POST', body: JSON.stringify({reason}) }); loadData(); } }} className="border border-red-200 text-red-500 px-3 py-1 rounded font-mono text-[10px] uppercase hover:bg-red-50 transition-colors">Reject</button>
 											</td>
 										</tr>
 									))}

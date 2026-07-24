@@ -104,6 +104,22 @@ class Healthedia_Dashboard_API {
 			'callback' => array($this, 'delete_certificate'),
 			'permission_callback' => array($this, 'check_admin_permissions')
 		));
+
+		register_rest_route('healthedia/v1', '/admin/verifications', array(
+			'methods' => 'GET',
+			'callback' => array($this, 'get_verification_requests'),
+			'permission_callback' => array($this, 'check_admin_permissions')
+		));
+		register_rest_route('healthedia/v1', '/admin/verifications/(?P<id>\d+)/approve', array(
+			'methods' => 'POST',
+			'callback' => array($this, 'approve_verification'),
+			'permission_callback' => array($this, 'check_admin_permissions')
+		));
+		register_rest_route('healthedia/v1', '/admin/verifications/(?P<id>\d+)/reject', array(
+			'methods' => 'POST',
+			'callback' => array($this, 'reject_verification'),
+			'permission_callback' => array($this, 'check_admin_permissions')
+		));
 	}
 
 	public function check_admin_permissions() {
@@ -373,6 +389,58 @@ class Healthedia_Dashboard_API {
 		require_once HEALTHEDIA_PLUGIN_DIR . 'includes/class-healthedia-seeder.php';
 		Healthedia_Seeder::wipe_mock_data();
 		return rest_ensure_response(array('success' => true, 'message' => 'Mock data wiped successfully.'));
+	}
+
+	public function get_verification_requests() {
+		$users = get_users(array(
+			'meta_key' => '_healthedia_verification_status',
+			'meta_value' => 'pending'
+		));
+		$data = array();
+		foreach ($users as $user) {
+			$doc_id = get_user_meta($user->ID, '_healthedia_verification_doc_id', true);
+			$doc_url = $doc_id ? wp_get_attachment_url($doc_id) : '';
+			$data[] = array(
+				'id' => $user->ID,
+				'name' => $user->display_name,
+				'email' => $user->user_email,
+				'specialty' => get_user_meta($user->ID, '_healthedia_specialty', true),
+				'institution' => get_user_meta($user->ID, '_healthedia_institution', true),
+				'date' => get_user_meta($user->ID, '_healthedia_verification_date', true),
+				'document_url' => $doc_url
+			);
+		}
+		return rest_ensure_response($data);
+	}
+
+	public function approve_verification(WP_REST_Request $request) {
+		$user_id = $request->get_param('id');
+		update_user_meta($user_id, '_healthedia_verified', '1');
+		update_user_meta($user_id, '_healthedia_verification_status', 'approved');
+
+		require_once HEALTHEDIA_PLUGIN_DIR . 'modules/Notifications/class-notification-api.php';
+		Healthedia_Notification_API::add_notification($user_id, 'Congratulations! Your account verification request has been approved. The Verified Badge is now active on your public profile.', home_url('/u/'.get_user_meta($user_id, '_healthedia_username', true)));
+
+		$user = get_userdata($user_id);
+		wp_mail($user->user_email, 'Healthedia Account Verified', "Dear {$user->display_name},\n\nCongratulations! Your account verification request has been approved. The Verified Badge (✔) is now active on your public profile.\n\nThank you for being a part of the Healthedia global network.\n\nThe Healthedia Editorial Board");
+
+		return rest_ensure_response(array('success' => true));
+	}
+
+	public function reject_verification(WP_REST_Request $request) {
+		$user_id = $request->get_param('id');
+		$params = $request->get_json_params();
+		$reason = sanitize_text_field($params['reason'] ?? 'Did not meet verification criteria.');
+
+		update_user_meta($user_id, '_healthedia_verification_status', 'rejected');
+
+		require_once HEALTHEDIA_PLUGIN_DIR . 'modules/Notifications/class-notification-api.php';
+		Healthedia_Notification_API::add_notification($user_id, "Your account verification request was not approved. Reason: {$reason}", home_url('/account-settings'));
+
+		$user = get_userdata($user_id);
+		wp_mail($user->user_email, 'Healthedia Verification Update', "Dear {$user->display_name},\n\nWe have reviewed your verification request. Unfortunately, it was not approved at this time.\n\nReason: {$reason}\n\nYou may update your information and submit a new request via your Account Settings.\n\nThe Healthedia Editorial Board");
+
+		return rest_ensure_response(array('success' => true));
 	}
 
 	public function get_certificates() {

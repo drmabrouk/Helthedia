@@ -8,6 +8,47 @@ class Healthedia_Profile_Endpoints {
 				return is_user_logged_in();
 			}
 		));
+
+		register_rest_route('healthedia/v1', '/profile/verify-request', array(
+			'methods' => 'POST',
+			'callback' => array($this, 'request_verification'),
+			'permission_callback' => function () {
+				return is_user_logged_in();
+			}
+		));
+	}
+
+	public function request_verification(WP_REST_Request $request) {
+		$user_id = get_current_user_id();
+
+		if (get_user_meta($user_id, '_healthedia_verified', true) === '1') {
+			return new WP_Error('already_verified', 'Your account is already verified.', array('status' => 400));
+		}
+
+		if (get_user_meta($user_id, '_healthedia_verification_status', true) === 'pending') {
+			return new WP_Error('already_pending', 'You already have a pending verification request.', array('status' => 400));
+		}
+
+		if (empty($_FILES['identity_document']) || $_FILES['identity_document']['error'] !== UPLOAD_ERR_OK) {
+			return new WP_Error('missing_document', 'Please upload a valid identity document.', array('status' => 400));
+		}
+
+		require_once(ABSPATH . 'wp-admin/includes/image.php');
+		require_once(ABSPATH . 'wp-admin/includes/file.php');
+		require_once(ABSPATH . 'wp-admin/includes/media.php');
+
+		$attachment_id = media_handle_upload('identity_document', 0);
+		if (is_wp_error($attachment_id)) {
+			return new WP_Error('upload_error', $attachment_id->get_error_message(), array('status' => 500));
+		}
+
+		update_user_meta($user_id, '_healthedia_verification_status', 'pending');
+		update_user_meta($user_id, '_healthedia_verification_doc_id', $attachment_id);
+		update_user_meta($user_id, '_healthedia_verification_date', time());
+
+		// Notify admins conceptually (or can be seen in dashboard)
+
+		return rest_ensure_response(array('success' => true, 'message' => 'Verification request submitted successfully.'));
 	}
 
 	public function update_profile(WP_REST_Request $request) {
@@ -74,6 +115,23 @@ class Healthedia_Profile_Endpoints {
 			} else {
 				return new WP_Error('username_exists', 'That username is already taken.', array('status' => 400));
 			}
+		}
+
+		// Handle Photo Upload
+		if (!empty($_FILES['profile_photo']) && $_FILES['profile_photo']['error'] === UPLOAD_ERR_OK) {
+			require_once(ABSPATH . 'wp-admin/includes/image.php');
+			require_once(ABSPATH . 'wp-admin/includes/file.php');
+			require_once(ABSPATH . 'wp-admin/includes/media.php');
+
+			$attachment_id = media_handle_upload('profile_photo', 0);
+			if (is_wp_error($attachment_id)) {
+				return new WP_Error('upload_error', $attachment_id->get_error_message(), array('status' => 500));
+			}
+
+			// Store the attachment ID in user meta
+			$photo_url = wp_get_attachment_url($attachment_id);
+			update_user_meta($user_id, '_healthedia_profile_photo', $photo_url);
+			update_user_meta($user_id, '_healthedia_profile_photo_id', $attachment_id);
 		}
 
 		return rest_ensure_response(array('success' => true, 'message' => 'Profile updated successfully.'));

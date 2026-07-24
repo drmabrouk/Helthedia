@@ -22,7 +22,7 @@ $public_url = $username ? home_url('/u/' . $username) : home_url('/profile/' . $
 
 		<div id="settings-message" class="hidden mb-6 p-4 rounded-xl font-mono text-sm border"></div>
 
-		<form id="healthedia-settings-form" class="space-y-8">
+		<form id="healthedia-settings-form" class="space-y-8" enctype="multipart/form-data">
 			<!-- Privacy Controls -->
 			<div class="bg-gray-50 border border-[#E0E0E0] rounded-2xl p-8">
 				<h2 class="font-sans font-bold uppercase tracking-wider text-sm mb-6 flex items-center gap-2">
@@ -78,6 +78,26 @@ $public_url = $username ? home_url('/u/' . $username) : home_url('/profile/' . $
 			<div class="bg-white border border-[#E0E0E0] rounded-2xl p-8">
 				<h2 class="font-sans font-bold uppercase tracking-wider text-sm mb-6">Academic Information</h2>
 
+				<div class="mb-8 pb-8 border-b border-[#E0E0E0]">
+					<label class="block font-mono text-[10px] uppercase tracking-widest text-gray-500 mb-2">Profile Portrait</label>
+					<div class="flex items-center gap-6">
+						<div class="w-24 h-24 rounded-full bg-gray-100 border border-[#E0E0E0] overflow-hidden flex-shrink-0">
+							<?php
+							$photo_url = get_user_meta($user_id, '_healthedia_profile_photo', true);
+							if ($photo_url) {
+								echo '<img src="'.esc_url($photo_url).'" class="w-full h-full object-cover" alt="Profile">';
+							} else {
+								echo get_avatar($user_id, 96, '', '', array('class' => 'w-full h-full object-cover'));
+							}
+							?>
+						</div>
+						<div class="flex-grow">
+							<input type="file" name="profile_photo" accept="image/jpeg,image/png,image/webp" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-mono file:uppercase file:tracking-widest file:bg-gray-50 file:text-black hover:file:bg-gray-100 transition-colors cursor-pointer outline-none">
+							<p class="font-mono text-[10px] text-gray-500 mt-2 uppercase tracking-widest">Recommendation: A professional portrait with a plain background is preferred.</p>
+						</div>
+					</div>
+				</div>
+
 				<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
 					<div>
 						<label class="block font-mono text-[10px] uppercase tracking-widest text-gray-500 mb-2">First Name</label>
@@ -121,6 +141,49 @@ $public_url = $username ? home_url('/u/' . $username) : home_url('/profile/' . $
 				</button>
 			</div>
 		</form>
+
+		<!-- Verification Request Workflow -->
+		<div class="mt-12 bg-gray-50 border border-[#E0E0E0] rounded-2xl p-8">
+			<h2 class="font-sans font-bold uppercase tracking-wider text-sm mb-2 flex items-center gap-2">
+				<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+				Account Verification Request
+			</h2>
+
+			<?php if (get_user_meta($user_id, '_healthedia_verified', true) === '1'): ?>
+				<p class="font-mono text-sm text-green-600 uppercase tracking-widest mt-4">Your account is fully verified.</p>
+			<?php elseif (get_user_meta($user_id, '_healthedia_verification_status', true) === 'pending'): ?>
+				<p class="font-mono text-sm text-yellow-600 uppercase tracking-widest mt-4">Your verification request is currently under review by the Editorial Board.</p>
+			<?php else: ?>
+				<p class="font-sans text-sm text-gray-600 mb-6 leading-relaxed">
+					To receive the Verified Badge (✔) on your public profile, you must undergo a secure identity verification process.
+					Please ensure the following before submitting:
+				</p>
+				<ul class="list-disc list-inside font-mono text-xs text-gray-500 mb-6 space-y-2 ml-4">
+					<li>Your profile information above is fully completed.</li>
+					<li>Your email address belongs to an official institutional or academic domain.</li>
+					<li>All academic and professional information is accurate.</li>
+					<li>You provide a valid National ID or Passport below.</li>
+				</ul>
+
+				<div id="verification-message" class="hidden mb-6 p-4 rounded-xl font-mono text-sm border"></div>
+
+				<form id="healthedia-verification-form" class="space-y-6" enctype="multipart/form-data">
+					<div class="border border-[#E0E0E0] rounded-xl p-6 bg-white">
+						<label class="block font-mono text-[10px] uppercase tracking-widest text-gray-500 mb-2">Upload Identity Document (National ID / Passport)</label>
+						<input type="file" name="identity_document" required accept=".pdf,image/jpeg,image/png,image/webp" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-mono file:uppercase file:tracking-widest file:bg-gray-50 file:text-black hover:file:bg-gray-100 transition-colors cursor-pointer outline-none">
+					</div>
+					<div class="flex justify-start">
+						<button type="submit" class="bg-black text-white px-8 py-3 rounded-full font-sans uppercase text-sm tracking-wide hover:bg-gray-800 transition-colors flex items-center gap-2">
+							<svg class="w-4 h-4 hidden" id="verification-spinner" class="animate-spin" fill="none" viewBox="0 0 24 24">
+								<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+								<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+							</svg>
+							Submit Request
+						</button>
+					</div>
+				</form>
+			<?php endif; ?>
+		</div>
 	</main>
 </div>
 <script>
@@ -129,44 +192,82 @@ document.addEventListener('DOMContentLoaded', () => {
 	const msgBox = document.getElementById('settings-message');
 	const spinner = document.getElementById('settings-spinner');
 
-	if (!form) return;
+	if (form) {
+		form.addEventListener('submit', async (e) => {
+			e.preventDefault();
+			const formData = new FormData(form);
 
-	form.addEventListener('submit', async (e) => {
-		e.preventDefault();
-		const formData = new FormData(form);
-		const data = Object.fromEntries(formData.entries());
+			msgBox.classList.add('hidden');
+			spinner.classList.remove('hidden');
 
-		msgBox.classList.add('hidden');
-		spinner.classList.remove('hidden');
+			try {
+				const res = await fetch('/wp-json/healthedia/v1/profile', {
+					method: 'POST',
+					headers: {
+						'X-WP-Nonce': '<?php echo wp_create_nonce("wp_rest"); ?>'
+					},
+					body: formData
+				});
 
-		try {
-			const res = await fetch('/wp-json/healthedia/v1/profile', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-					'X-WP-Nonce': '<?php echo wp_create_nonce("wp_rest"); ?>'
-				},
-				body: JSON.stringify(data)
-			});
+				const result = await res.json();
 
-			const result = await res.json();
-
-			if (res.ok) {
-				msgBox.textContent = result.message || 'Settings saved successfully.';
-				msgBox.className = 'mb-6 p-4 rounded-xl font-mono text-sm border border-black bg-gray-50 text-black';
-			} else {
-				msgBox.textContent = result.message || 'An error occurred.';
+				if (res.ok) {
+					msgBox.textContent = result.message || 'Settings saved successfully.';
+					msgBox.className = 'mb-6 p-4 rounded-xl font-mono text-sm border border-black bg-gray-50 text-black';
+				} else {
+					msgBox.textContent = result.message || 'An error occurred.';
+					msgBox.className = 'mb-6 p-4 rounded-xl font-mono text-sm border border-red-500 bg-red-50 text-red-700';
+				}
+			} catch (err) {
+				msgBox.textContent = 'Network error. Please try again.';
 				msgBox.className = 'mb-6 p-4 rounded-xl font-mono text-sm border border-red-500 bg-red-50 text-red-700';
+			} finally {
+				msgBox.classList.remove('hidden');
+				spinner.classList.add('hidden');
+				window.scrollTo({top: 0, behavior: 'smooth'});
 			}
-		} catch (err) {
-			msgBox.textContent = 'Network error. Please try again.';
-			msgBox.className = 'mb-6 p-4 rounded-xl font-mono text-sm border border-red-500 bg-red-50 text-red-700';
-		} finally {
-			msgBox.classList.remove('hidden');
-			spinner.classList.add('hidden');
-			window.scrollTo({top: 0, behavior: 'smooth'});
-		}
-	});
+		});
+	}
+
+	const vForm = document.getElementById('healthedia-verification-form');
+	const vMsgBox = document.getElementById('verification-message');
+	const vSpinner = document.getElementById('verification-spinner');
+
+	if (vForm) {
+		vForm.addEventListener('submit', async (e) => {
+			e.preventDefault();
+			const formData = new FormData(vForm);
+
+			vMsgBox.classList.add('hidden');
+			vSpinner.classList.remove('hidden');
+
+			try {
+				const res = await fetch('/wp-json/healthedia/v1/profile/verify-request', {
+					method: 'POST',
+					headers: {
+						'X-WP-Nonce': '<?php echo wp_create_nonce("wp_rest"); ?>'
+					},
+					body: formData
+				});
+
+				const result = await res.json();
+
+				if (res.ok) {
+					vForm.innerHTML = '<p class="font-mono text-sm text-yellow-600 uppercase tracking-widest mt-4">Your verification request has been successfully submitted and is under review.</p>';
+				} else {
+					vMsgBox.textContent = result.message || 'An error occurred.';
+					vMsgBox.className = 'mb-6 p-4 rounded-xl font-mono text-sm border border-red-500 bg-red-50 text-red-700';
+					vMsgBox.classList.remove('hidden');
+				}
+			} catch (err) {
+				vMsgBox.textContent = 'Network error. Please try again.';
+				vMsgBox.className = 'mb-6 p-4 rounded-xl font-mono text-sm border border-red-500 bg-red-50 text-red-700';
+				vMsgBox.classList.remove('hidden');
+			} finally {
+				vSpinner.classList.add('hidden');
+			}
+		});
+	}
 });
 </script>
 <?php include HEALTHEDIA_PLUGIN_DIR . 'public/views/layout-footer.php'; ?>

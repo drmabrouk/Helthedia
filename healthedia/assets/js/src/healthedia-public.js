@@ -303,4 +303,93 @@ document.addEventListener('DOMContentLoaded', () => {
 			});
 		}
 	}
+
+	// Notifications Dropdown Logic
+	const btnNotifications = document.getElementById('btn-notifications');
+	const notificationsDropdown = document.getElementById('notifications-dropdown');
+	const notificationsList = document.getElementById('notifications-list');
+	const notificationBadge = document.getElementById('notification-badge');
+	const btnMarkAllRead = document.getElementById('btn-mark-all-read');
+
+	if (btnNotifications && notificationsDropdown) {
+		let notificationsOpen = false;
+
+		const fetchNotifications = async () => {
+			if (!window.healthediaPublicSettings || !window.healthediaPublicSettings.nonce) return;
+			try {
+				const res = await fetch('/wp-json/healthedia/v1/notifications', {
+					headers: { 'X-WP-Nonce': window.healthediaPublicSettings.nonce }
+				});
+				if (!res.ok) return;
+				const data = await res.json();
+
+				const unreadCount = data.filter(n => !n.is_read).length;
+				if (unreadCount > 0) {
+					notificationBadge.classList.remove('hidden');
+				} else {
+					notificationBadge.classList.add('hidden');
+				}
+
+				if (data.length === 0) {
+					notificationsList.innerHTML = '<div class="p-4 text-center text-gray-500 font-mono text-xs">No notifications.</div>';
+					return;
+				}
+
+				notificationsList.innerHTML = data.map(n => `
+					<div class="p-4 flex flex-col gap-1 ${n.is_read ? 'opacity-60' : 'bg-blue-50/30'}">
+						<div class="flex justify-between items-start gap-2">
+							<a href="${n.link || '#'}" class="font-sans text-sm ${n.is_read ? 'text-gray-700' : 'text-black font-bold hover:underline'}">${escapeHTML(n.message)}</a>
+							${!n.is_read ? '<span class="w-2 h-2 bg-blue-500 rounded-full shrink-0 mt-1.5"></span>' : ''}
+						</div>
+						<div class="font-mono text-[10px] text-gray-400 uppercase tracking-widest">${new Date(n.date).toLocaleString()}</div>
+					</div>
+				`).join('');
+
+			} catch (e) {
+				console.error(e);
+			}
+		};
+
+		// Initial Fetch
+		fetchNotifications();
+
+		btnNotifications.addEventListener('click', (e) => {
+			e.stopPropagation();
+			notificationsOpen = !notificationsOpen;
+			if (notificationsOpen) {
+				notificationsDropdown.classList.remove('hidden');
+				fetchNotifications(); // Refresh on open
+			} else {
+				notificationsDropdown.classList.add('hidden');
+			}
+		});
+
+		document.addEventListener('click', (e) => {
+			if (notificationsOpen && !notificationsDropdown.contains(e.target)) {
+				notificationsDropdown.classList.add('hidden');
+				notificationsOpen = false;
+			}
+		});
+
+		if (btnMarkAllRead) {
+			btnMarkAllRead.addEventListener('click', async (e) => {
+				e.stopPropagation();
+				e.preventDefault();
+				btnMarkAllRead.innerText = 'Marking...';
+				try {
+					await fetch('/wp-json/healthedia/v1/notifications/mark-read', {
+						method: 'POST',
+						headers: {
+							'X-WP-Nonce': window.healthediaPublicSettings.nonce,
+							'Content-Type': 'application/json'
+						}
+					});
+					btnMarkAllRead.innerText = 'Mark All Read';
+					fetchNotifications();
+				} catch (e) {
+					btnMarkAllRead.innerText = 'Mark All Read';
+				}
+			});
+		}
+	}
 });

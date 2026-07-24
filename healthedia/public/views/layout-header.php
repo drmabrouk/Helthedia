@@ -35,7 +35,29 @@
 							Dashboard
 						</a>
 					<?php endif; ?>
-					<a href="<?php echo home_url('/account-settings'); ?>" class="font-mono text-xs uppercase tracking-wider border border-[#E0E0E0] px-4 py-1.5 rounded-full hover:border-black transition-colors">Portal</a>
+					<div class="flex items-center gap-3 border border-[#E0E0E0] rounded-full p-1 pl-3 bg-white shadow-sm relative">
+						<a href="<?php echo home_url('/account-settings'); ?>" title="Profile Settings" class="text-gray-500 hover:text-black transition-colors flex items-center justify-center">
+							<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+						</a>
+						<button id="btn-notifications" title="Notifications" class="text-gray-500 hover:text-black transition-colors flex items-center justify-center relative">
+							<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+							<span id="notification-badge" class="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full hidden"></span>
+						</button>
+						<a href="<?php echo wp_logout_url(home_url()); ?>" title="Secure Logout" class="bg-gray-100 text-gray-600 hover:bg-red-50 hover:text-red-600 transition-colors w-8 h-8 rounded-full flex items-center justify-center">
+							<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+						</a>
+
+						<!-- Notifications Dropdown -->
+						<div id="notifications-dropdown" class="hidden absolute top-full right-0 mt-2 w-80 bg-white border border-[#E0E0E0] rounded-xl shadow-lg z-50 overflow-hidden">
+							<div class="p-3 border-b border-[#E0E0E0] flex justify-between items-center bg-gray-50">
+								<span class="font-sans font-bold text-xs uppercase tracking-widest text-gray-700">Notifications</span>
+								<button id="btn-mark-all-read" class="font-mono text-[10px] text-gray-500 hover:text-black uppercase tracking-widest transition-colors">Mark All Read</button>
+							</div>
+							<div id="notifications-list" class="max-h-80 overflow-y-auto font-sans text-sm divide-y divide-[#E0E0E0]">
+								<div class="p-4 text-center text-gray-500 font-mono text-xs">Loading...</div>
+							</div>
+						</div>
+					</div>
 				<?php else: ?>
 					<a href="<?php echo home_url('/login'); ?>" class="font-mono text-xs uppercase tracking-wider bg-black text-white px-5 py-2 rounded-full hover:bg-gray-800 transition-colors flex items-center justify-center">Login / Register</a>
 				<?php endif; ?>

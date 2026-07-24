@@ -29,6 +29,7 @@ class Healthedia {
 		require_once HEALTHEDIA_PLUGIN_DIR . 'modules/Profiles/class-profile-controller.php';
 		require_once HEALTHEDIA_PLUGIN_DIR . 'modules/Articles/class-article-controller.php';
 		require_once HEALTHEDIA_PLUGIN_DIR . 'modules/Directories/class-directory-controller.php';
+		require_once HEALTHEDIA_PLUGIN_DIR . 'modules/Notifications/class-notification-controller.php';
 
 		require_once HEALTHEDIA_PLUGIN_DIR . 'dashboard/class-dashboard-controller.php';
 		require_once HEALTHEDIA_PLUGIN_DIR . 'public/class-public-controller.php';
@@ -60,6 +61,7 @@ class Healthedia {
 		// Register Institution Custom Post Type
 		$this->loader->add_action('init', $this, 'register_institution_cpt');
 		$this->loader->add_action('init', $this, 'register_certificate_cpt');
+		$this->loader->add_action('init', $this, 'register_notification_cpt');
 
 		$seo = new Healthedia_SEO();
 		$this->loader->add_action( 'wp_head', $seo, 'inject_metadata', 5 );
@@ -94,13 +96,27 @@ class Healthedia {
 		));
 	}
 
+	public function register_notification_cpt() {
+		register_post_type('healthedia_notif', array(
+			'labels' => array(
+				'name' => 'Notifications',
+				'singular_name' => 'Notification'
+			),
+			'public' => false,
+			'has_archive' => false,
+			'show_in_rest' => false,
+			'supports' => array('title', 'editor', 'author')
+		));
+	}
+
 	private function init_modules() {
 		$modules = [
 			new Healthedia_Auth_Controller(),
 			new Healthedia_Search_Controller(),
 			new Healthedia_Profile_Controller(),
 			new Healthedia_Article_Controller(),
-			new Healthedia_Directory_Controller()
+			new Healthedia_Directory_Controller(),
+			new Healthedia_Notification_Controller()
 		];
 
 		foreach ($modules as $module) {
