@@ -11,7 +11,7 @@ $user_id = get_current_user_id();
 		<div class="space-y-4">
 			<?php
 			$args = array(
-				'post_type' => 'healthedia_article',
+				'post_type' => array('healthedia_article', 'healthedia_post', 'healthedia_ext_res', 'healthedia_journal'),
 				'author' => $user_id,
 				'posts_per_page' => -1,
 				'post_status' => array('publish', 'pending')

@@ -122,11 +122,15 @@ document.addEventListener('DOMContentLoaded', async () => {
 			let html = '';
 
 			data.forEach(item => {
-				if (item.type === 'healthedia_article') {
+				if (item.type === 'healthedia_article' || item.type === 'healthedia_post' || item.type === 'healthedia_ext_res' || item.type === 'healthedia_journal') {
+					let badge = 'Article';
+					if (item.type === 'healthedia_journal') badge = 'Journal Paper';
+					if (item.type === 'healthedia_ext_res') badge = 'Ext. Research';
+
 					html += `
 					<div class="border border-[#E0E0E0] rounded-2xl p-8 hover:border-black transition-colors shadow-sm bg-white">
 						<div class="flex items-center gap-4 font-mono text-[10px] text-gray-500 uppercase tracking-widest mb-4">
-							<span class="bg-gray-100 px-3 py-1 rounded-full border border-[#E0E0E0] font-bold text-black text-[9px]">Article</span>
+							<span class="bg-gray-100 px-3 py-1 rounded-full border border-[#E0E0E0] font-bold text-black text-[9px]">${badge}</span>
 							<span class="flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg> Healthedia Global Journal</span>
 						</div>
 						<a href="${item.url}" class="font-sans font-bold text-2xl block hover:underline mb-4 text-[#111111] leading-tight">${escapeHTML(item.title)}</a>

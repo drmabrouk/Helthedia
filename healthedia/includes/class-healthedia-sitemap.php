@@ -28,9 +28,9 @@ class Healthedia_Sitemap {
             // Search / Directories
             $this->add_url(home_url('/archive-search'), date('c'), 'daily', '0.8');
 
-            // Articles
+            // Publications
             $articles = new WP_Query(array(
-                'post_type' => 'healthedia_article',
+                'post_type' => array('healthedia_post', 'healthedia_ext_res', 'healthedia_journal', 'healthedia_article'),
                 'post_status' => 'publish',
                 'posts_per_page' => -1,
             ));
@@ -49,7 +49,7 @@ class Healthedia_Sitemap {
                 $privacy = get_user_meta($user->ID, '_healthedia_privacy_mode', true);
                 // default to public if not set for testing/legacy, or check explicit
                 if (empty($privacy) || $privacy === 'public') {
-                    $url = home_url('/u/' . $user->user_nicename);
+                    $url = home_url('/' . $user->user_nicename);
                     $this->add_url($url, date('c'), 'weekly', '0.6');
                 }
             }

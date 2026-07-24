@@ -1,5 +1,44 @@
 document.addEventListener('DOMContentLoaded', () => {
 
+	// Voice Search Logic for Gateway
+	const btnVoiceSearch = document.getElementById('btn-voice-search');
+	const gatewaySearchInput = document.getElementById('gateway-search-input');
+
+	if (btnVoiceSearch && gatewaySearchInput) {
+		const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+		if (typeof SpeechRecognition !== 'undefined') {
+			const recognition = new SpeechRecognition();
+			recognition.lang = 'en-US';
+			recognition.interimResults = false;
+			recognition.maxAlternatives = 1;
+
+			btnVoiceSearch.addEventListener('click', () => {
+				btnVoiceSearch.classList.replace('text-gray-400', 'text-red-500');
+				btnVoiceSearch.classList.add('animate-pulse');
+				recognition.start();
+			});
+
+			recognition.addEventListener('result', (e) => {
+				const transcript = e.results[0][0].transcript;
+				gatewaySearchInput.value = transcript;
+				gatewaySearchInput.closest('form').submit();
+			});
+
+			recognition.addEventListener('end', () => {
+				btnVoiceSearch.classList.replace('text-red-500', 'text-gray-400');
+				btnVoiceSearch.classList.remove('animate-pulse');
+			});
+
+			recognition.addEventListener('error', (e) => {
+				btnVoiceSearch.classList.replace('text-red-500', 'text-gray-400');
+				btnVoiceSearch.classList.remove('animate-pulse');
+				console.error('Voice search error:', e.error);
+			});
+		} else {
+			btnVoiceSearch.classList.add('hidden'); // Hide if not supported
+		}
+	}
+
 	const escapeHTML = (str) => {
 		if (typeof str !== 'string') return str;
 		return str.replace(/[&<>'"]/g,
@@ -13,68 +52,87 @@ document.addEventListener('DOMContentLoaded', () => {
 		);
 	};
 
-	// Submit Manuscript Form Logic
-	const formSubmitMs = document.getElementById('form-submit-manuscript');
-	if (formSubmitMs) {
-		const fileInput = document.getElementById('ms-file');
-		const fileNameDisplay = document.getElementById('ms-file-name');
+	// Universal Submission Logic (Articles, Research, Journal)
+	const submitForms = ['form-submit-article', 'form-submit-research', 'form-submit-journal'];
+	submitForms.forEach(formId => {
+		const form = document.getElementById(formId);
+		if (form) {
+			const fileInput = document.getElementById('ms-file');
+			const fileNameDisplay = document.getElementById('ms-file-name');
 
-		fileInput.addEventListener('change', (e) => {
-			if (e.target.files.length > 0) {
-				fileNameDisplay.innerText = 'Selected: ' + e.target.files[0].name;
-				fileNameDisplay.classList.add('text-black', 'font-bold');
+			if (fileInput && fileNameDisplay) {
+				fileInput.addEventListener('change', (e) => {
+					if (e.target.files.length > 0) {
+						fileNameDisplay.innerText = 'Selected: ' + e.target.files[0].name;
+						fileNameDisplay.classList.add('text-black', 'font-bold');
+					}
+				});
 			}
-		});
 
-		formSubmitMs.addEventListener('submit', (e) => {
-			e.preventDefault();
-			const btn = document.getElementById('btn-submit-ms');
-			const status = document.getElementById('ms-status');
+			form.addEventListener('submit', (e) => {
+				e.preventDefault();
+				const btn = document.getElementById('btn-submit-ms');
+				const status = document.getElementById('ms-status');
+				const originalBtnText = btn.innerText;
 
-			btn.innerText = 'Uploading...';
-			btn.disabled = true;
-			status.classList.add('hidden');
+				btn.innerText = 'Uploading...';
+				btn.disabled = true;
+				status.classList.add('hidden');
 
-			const formData = new FormData();
-			formData.append('title', document.getElementById('ms-title').value);
-			formData.append('abstract', document.getElementById('ms-abstract').value);
-			formData.append('specialty', document.getElementById('ms-specialty').value);
-			formData.append('nct', document.getElementById('ms-nct').value);
-			formData.append('manuscript', fileInput.files[0]);
+				const formData = new FormData();
+				const typeInput = document.getElementById('ms-type');
+				formData.append('type', typeInput ? typeInput.value : 'healthedia_post');
+				formData.append('title', document.getElementById('ms-title').value);
 
-			const nonce = window.healthediaPublicSettings?.nonce || '';
+				const abstractInput = document.getElementById('ms-abstract');
+				if (abstractInput) formData.append('abstract', abstractInput.value);
 
-			fetch('/wp-json/healthedia/v1/manuscript/submit', {
-				method: 'POST',
-				headers: { 'X-WP-Nonce': nonce },
-				body: formData
-			})
-			.then(res => res.json())
-			.then(data => {
-				btn.innerText = 'Submit to Editorial Board';
-				btn.disabled = false;
-				status.classList.remove('hidden', 'bg-red-50', 'text-red-600');
+				const specialtyInput = document.getElementById('ms-specialty');
+				if (specialtyInput) formData.append('specialty', specialtyInput.value);
 
-				if (data.success) {
-					status.classList.add('bg-green-50', 'text-green-700', 'border', 'border-green-200');
-					status.innerText = data.message;
-					formSubmitMs.reset();
-					fileNameDisplay.innerText = 'Accepted formats: .PDF, .DOCX (Max 20MB)';
-					fileNameDisplay.classList.remove('text-black', 'font-bold');
-				} else {
-					status.classList.add('bg-red-50', 'text-red-600', 'border', 'border-red-200');
-					status.innerText = data.message || 'Submission failed.';
+				const nctInput = document.getElementById('ms-nct');
+				if (nctInput) formData.append('nct', nctInput.value);
+
+				if (fileInput && fileInput.files.length > 0) {
+					formData.append('manuscript', fileInput.files[0]);
 				}
-			})
-			.catch(() => {
-				btn.innerText = 'Submit to Editorial Board';
-				btn.disabled = false;
-				status.classList.remove('hidden');
-				status.classList.add('bg-red-50', 'text-red-600', 'border', 'border-red-200');
-				status.innerText = 'Network error during upload.';
+
+				const nonce = window.healthediaPublicSettings?.nonce || '';
+
+				fetch('/wp-json/healthedia/v1/manuscript/submit', {
+					method: 'POST',
+					headers: { 'X-WP-Nonce': nonce },
+					body: formData
+				})
+				.then(res => res.json())
+				.then(data => {
+					btn.innerText = originalBtnText;
+					btn.disabled = false;
+					status.classList.remove('hidden', 'bg-red-50', 'text-red-600');
+
+					if (data.success) {
+						status.classList.add('bg-green-50', 'text-green-700', 'border', 'border-green-200');
+						status.innerText = data.message;
+						form.reset();
+						if (fileNameDisplay) {
+							fileNameDisplay.innerText = 'Upload successful.';
+							fileNameDisplay.classList.remove('text-black', 'font-bold');
+						}
+					} else {
+						status.classList.add('bg-red-50', 'text-red-600', 'border', 'border-red-200');
+						status.innerText = data.message || 'Submission failed.';
+					}
+				})
+				.catch(() => {
+					btn.innerText = originalBtnText;
+					btn.disabled = false;
+					status.classList.remove('hidden');
+					status.classList.add('bg-red-50', 'text-red-600', 'border', 'border-red-200');
+					status.innerText = 'Network error during upload.';
+				});
 			});
-		});
-	}
+		}
+	});
 
 	// Mobile Off-Canvas Menu
 	const mobileMenuBtn = document.getElementById('mobile-menu-btn');

@@ -52,13 +52,15 @@ class Healthedia_Seeder {
 		}
 
 		// 3. Generate 15 dummy articles
+		$types = ['healthedia_post', 'healthedia_ext_res', 'healthedia_journal'];
 		for ($i = 1; $i <= 15; $i++) {
 			$author_id = !empty($researcher_ids) ? $researcher_ids[array_rand($researcher_ids)] : 1;
+			$post_type = $types[array_rand($types)];
 			$post_id = wp_insert_post(array(
 				'post_title' => 'A Comprehensive Study on Mock Data Point ' . $i,
 				'post_content' => 'This is the abstract for the mock article. It contains generated text to visualize the scientific journal layout accurately. Methodologies involve simulating UI.',
 				'post_status' => 'publish',
-				'post_type' => 'healthedia_article',
+				'post_type' => $post_type,
 				'post_author' => $author_id
 			));
 			if (!is_wp_error($post_id)) {
@@ -81,7 +83,7 @@ class Healthedia_Seeder {
 
 		// Delete mock articles and institutions
 		$mock_posts = get_posts(array(
-			'post_type' => array('healthedia_article', 'healthedia_inst'),
+			'post_type' => array('healthedia_article', 'healthedia_post', 'healthedia_ext_res', 'healthedia_journal', 'healthedia_inst'),
 			'meta_key' => '_healthedia_is_mock',
 			'meta_value' => 'yes',
 			'posts_per_page' => -1

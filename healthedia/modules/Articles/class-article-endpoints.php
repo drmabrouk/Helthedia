@@ -34,41 +34,66 @@ class Healthedia_Article_Endpoints {
 	}
 
 	public function handle_submission($request) {
+		$type = sanitize_text_field($request->get_param('type'));
+		if (empty($type)) $type = 'healthedia_post';
+
+		$allowed_types = ['healthedia_post', 'healthedia_ext_res', 'healthedia_journal', 'healthedia_article'];
+		if (!in_array($type, $allowed_types)) {
+			$type = 'healthedia_post';
+		}
+
 		$title = sanitize_text_field($request->get_param('title'));
-		$abstract = sanitize_textarea_field($request->get_param('abstract'));
+		$abstract = wp_kses_post($request->get_param('abstract')); // Allow HTML for standard articles
 		$specialty = sanitize_text_field($request->get_param('specialty'));
 		$nct = sanitize_text_field($request->get_param('nct'));
 
-		if (empty($title) || empty($abstract)) {
-			return new WP_Error('missing_fields', 'Title and Abstract are required.', array('status' => 400));
+		if (empty($title)) {
+			return new WP_Error('missing_fields', 'Title is required.', array('status' => 400));
 		}
 
 		$files = $request->get_file_params();
-		if (empty($files['manuscript'])) {
-			return new WP_Error('missing_file', 'Please upload a manuscript file.', array('status' => 400));
-		}
 
-		$file = $files['manuscript'];
+		$upload_url = '';
+		$upload_path = '';
+		$attachment_id = 0;
 
-		require_once(ABSPATH . 'wp-admin/includes/file.php');
-		$upload_overrides = array(
-			'test_form' => false,
-			'mimes' => array(
-				'pdf' => 'application/pdf',
-				'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-			)
-		);
-		$upload = wp_handle_upload($file, $upload_overrides);
+		if (!empty($files['manuscript']) && $files['manuscript']['error'] === UPLOAD_ERR_OK) {
+			require_once(ABSPATH . 'wp-admin/includes/image.php');
+			require_once(ABSPATH . 'wp-admin/includes/file.php');
+			require_once(ABSPATH . 'wp-admin/includes/media.php');
 
-		if (isset($upload['error'])) {
-			return new WP_Error('upload_error', $upload['error'], array('status' => 500));
+			if ($type === 'healthedia_post') {
+				// Cover image upload
+				$attachment_id = media_handle_upload('manuscript', 0);
+				if (is_wp_error($attachment_id)) {
+					return new WP_Error('upload_error', $attachment_id->get_error_message(), array('status' => 500));
+				}
+			} else {
+				// Document upload
+				$upload_overrides = array(
+					'test_form' => false,
+					'mimes' => array(
+						'pdf' => 'application/pdf',
+						'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+					)
+				);
+				$upload = wp_handle_upload($files['manuscript'], $upload_overrides);
+				if (isset($upload['error'])) {
+					return new WP_Error('upload_error', $upload['error'], array('status' => 500));
+				}
+				$upload_url = $upload['url'];
+				$upload_path = $upload['file'];
+			}
+		} elseif ($type === 'healthedia_ext_res' || $type === 'healthedia_journal') {
+			// Require file for research and journal
+			return new WP_Error('missing_file', 'Please upload a manuscript/document file.', array('status' => 400));
 		}
 
 		$post_id = wp_insert_post(array(
 			'post_title' => $title,
 			'post_content' => $abstract,
-			'post_type' => 'healthedia_article',
-			'post_status' => 'pending', // Awaiting editorial review
+			'post_type' => $type,
+			'post_status' => ($type === 'healthedia_ext_res') ? 'publish' : 'pending', // External research is published if they have permission
 			'post_author' => get_current_user_id()
 		));
 
@@ -76,14 +101,18 @@ class Healthedia_Article_Endpoints {
 			return new WP_Error('db_error', 'Failed to save manuscript.', array('status' => 500));
 		}
 
+		if ($attachment_id) {
+			set_post_thumbnail($post_id, $attachment_id);
+		}
+
 		update_post_meta($post_id, '_healthedia_specialty', $specialty);
 		update_post_meta($post_id, '_healthedia_nct', $nct);
-		update_post_meta($post_id, '_healthedia_file_url', $upload['url']);
-		update_post_meta($post_id, '_healthedia_file_path', $upload['file']);
+		if ($upload_url) update_post_meta($post_id, '_healthedia_file_url', $upload_url);
+		if ($upload_path) update_post_meta($post_id, '_healthedia_file_path', $upload_path);
 
 		return rest_ensure_response(array(
 			'success' => true,
-			'message' => 'Manuscript submitted successfully for review.',
+			'message' => ($type === 'healthedia_ext_res') ? 'Publication indexed successfully.' : 'Submission successful. Awaiting review.',
 			'post_id' => $post_id
 		));
 	}

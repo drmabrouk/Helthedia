@@ -36,7 +36,7 @@
 
 		<div class="space-y-6">
 			<?php
-			$args = array('post_type' => 'healthedia_article', 'posts_per_page' => 10);
+			$args = array('post_type' => array('healthedia_article', 'healthedia_post', 'healthedia_ext_res', 'healthedia_journal'), 'posts_per_page' => 10);
 			$query = new WP_Query($args);
 			if ($query->have_posts()): while ($query->have_posts()): $query->the_post();
 				$doi = get_post_meta(get_the_ID(), '_healthedia_doi', true);

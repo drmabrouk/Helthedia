@@ -62,6 +62,7 @@ class Healthedia {
 		$this->loader->add_action('init', $this, 'register_institution_cpt');
 		$this->loader->add_action('init', $this, 'register_certificate_cpt');
 		$this->loader->add_action('init', $this, 'register_notification_cpt');
+		$this->loader->add_action('init', $this, 'register_publication_cpts');
 
 		$seo = new Healthedia_SEO();
 		$this->loader->add_action( 'wp_head', $seo, 'inject_metadata', 5 );
@@ -106,6 +107,41 @@ class Healthedia {
 			'has_archive' => false,
 			'show_in_rest' => false,
 			'supports' => array('title', 'editor', 'author')
+		));
+	}
+
+	public function register_publication_cpts() {
+		register_post_type('healthedia_post', array(
+			'labels' => array(
+				'name' => 'Standard Articles',
+				'singular_name' => 'Standard Article'
+			),
+			'public' => true,
+			'has_archive' => true,
+			'show_in_rest' => true,
+			'supports' => array('title', 'editor', 'author', 'thumbnail')
+		));
+
+		register_post_type('healthedia_ext_res', array(
+			'labels' => array(
+				'name' => 'External Research',
+				'singular_name' => 'External Research'
+			),
+			'public' => true,
+			'has_archive' => true,
+			'show_in_rest' => true,
+			'supports' => array('title', 'editor', 'author')
+		));
+
+		register_post_type('healthedia_journal', array(
+			'labels' => array(
+				'name' => 'Scientific Journal',
+				'singular_name' => 'Journal Paper'
+			),
+			'public' => true,
+			'has_archive' => true,
+			'show_in_rest' => true,
+			'supports' => array('title', 'editor', 'author', 'thumbnail')
 		));
 	}
 

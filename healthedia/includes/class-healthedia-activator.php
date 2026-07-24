@@ -33,8 +33,10 @@ class Healthedia_Activator {
 			'account-settings' => array('title' => 'Account Settings', 'content' => '[healthedia_member_settings]'),
 			'saved-research' => array('title' => 'Saved Research', 'content' => '[healthedia_member_saved]'),
 			'my-requests' => array('title' => 'My Requests', 'content' => '[healthedia_member_requests]'),
-			// 10. Manuscript Submission Portal
-			'submit-manuscript' => array('title' => 'Manuscript Submission', 'content' => '[healthedia_submit_manuscript]'),
+			// 10. Submission Portals
+			'submit-article' => array('title' => 'Submit Article', 'content' => ''),
+			'submit-research' => array('title' => 'Add Published Research', 'content' => ''),
+			'submit-journal' => array('title' => 'Submit to Journal', 'content' => ''),
 			// 11. Legal & Support Pages
 			'privacy-policy' => array('title' => 'Privacy Policy', 'content' => ''),
 			'terms-of-service' => array('title' => 'Terms of Service', 'content' => ''),

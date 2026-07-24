@@ -12,7 +12,7 @@ $orcid = get_user_meta($user_id, '_healthedia_orcid', true);
 $privacy_mode = get_user_meta($user_id, '_healthedia_privacy_mode', true) ?: 'public';
 $description = get_user_meta($user_id, 'description', true);
 
-$public_url = $username ? home_url('/u/' . $username) : home_url('/profile/' . $user_id);
+$public_url = $username ? home_url('/' . $username) : home_url('/profile/' . $user_id);
 ?>
 <div class="max-w-7xl mx-auto flex flex-col md:flex-row gap-12 py-12 px-4 bg-white text-[#111111]">
 	<?php include HEALTHEDIA_PLUGIN_DIR . 'public/views/layout-member-sidebar.php'; ?>

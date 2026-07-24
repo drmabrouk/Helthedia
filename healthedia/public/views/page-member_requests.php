@@ -24,7 +24,7 @@ $user_id = get_current_user_id();
 				<tbody class="font-sans text-sm divide-y divide-[#E0E0E0]" id="requests-table-body">
 					<?php
 					$args = array(
-						'post_type' => 'healthedia_article',
+						'post_type' => array('healthedia_article', 'healthedia_post', 'healthedia_ext_res', 'healthedia_journal'),
 						'author' => $user_id,
 						'posts_per_page' => -1,
 						'post_status' => array('pending')

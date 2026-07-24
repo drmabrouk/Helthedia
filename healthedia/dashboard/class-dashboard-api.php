@@ -234,8 +234,16 @@ class Healthedia_Dashboard_API {
 	}
 
 	public function get_articles(WP_REST_Request $request) {
+		$type = sanitize_text_field($request->get_param('type'));
+		if (empty($type)) $type = 'healthedia_post';
+
+		$allowed_types = ['healthedia_post', 'healthedia_ext_res', 'healthedia_journal', 'healthedia_article'];
+		if (!in_array($type, $allowed_types)) {
+			$type = 'healthedia_post';
+		}
+
 		$args = array(
-			'post_type' => 'healthedia_article',
+			'post_type' => $type,
 			'post_status' => array('publish', 'pending', 'draft'),
 			'posts_per_page' => -1,
 			'orderby' => 'date',
@@ -419,7 +427,7 @@ class Healthedia_Dashboard_API {
 		update_user_meta($user_id, '_healthedia_verification_status', 'approved');
 
 		require_once HEALTHEDIA_PLUGIN_DIR . 'modules/Notifications/class-notification-api.php';
-		Healthedia_Notification_API::add_notification($user_id, 'Congratulations! Your account verification request has been approved. The Verified Badge is now active on your public profile.', home_url('/u/'.get_user_meta($user_id, '_healthedia_username', true)));
+		Healthedia_Notification_API::add_notification($user_id, 'Congratulations! Your account verification request has been approved. The Verified Badge is now active on your public profile.', home_url('/'.get_user_meta($user_id, '_healthedia_username', true)));
 
 		$user = get_userdata($user_id);
 		wp_mail($user->user_email, 'Healthedia Account Verified', "Dear {$user->display_name},\n\nCongratulations! Your account verification request has been approved. The Verified Badge (✔) is now active on your public profile.\n\nThank you for being a part of the Healthedia global network.\n\nThe Healthedia Editorial Board");

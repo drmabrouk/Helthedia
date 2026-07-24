@@ -8,7 +8,9 @@
 				'member_settings' => ['url' => '/account-settings', 'label' => 'Account Settings'],
 				'member_saved' => ['url' => '/saved-research', 'label' => 'Saved Research'],
 				'member_requests' => ['url' => '/my-requests', 'label' => 'My Requests'],
-				'submit_manuscript' => ['url' => '/submit-manuscript', 'label' => 'Submit Article']
+				'submit_article' => ['url' => '/submit-article', 'label' => 'Submit Article'],
+				'submit_research' => ['url' => '/submit-research', 'label' => 'Add Published Research'],
+				'submit_journal' => ['url' => '/submit-journal', 'label' => 'Submit to Journal']
 			];
 			foreach ($links as $slug => $data) {
 				$activeClass = ($current === $slug) ? 'bg-black text-white' : 'text-gray-500 hover:text-black hover:bg-gray-50';

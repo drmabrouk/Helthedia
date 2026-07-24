@@ -60,7 +60,7 @@ class Healthedia_Directory_Endpoints {
 				'specialty' => get_user_meta($user->ID, '_healthedia_specialty', true),
 				'verified' => Healthedia_Profile_Verification::is_verified($user->ID),
 				'views' => $metrics->views,
-				'url' => $username ? home_url('/u/' . $username) : home_url('/profile/' . $user->ID)
+				'url' => $username ? home_url('/' . $username) : home_url('/profile/' . $user->ID)
 			);
 		}
 

@@ -5,7 +5,7 @@ function healthedia_breadcrumbs() {
     echo '<nav class="font-mono text-xs uppercase tracking-widest text-gray-500 mb-6 flex flex-wrap items-center">';
     echo '<a href="' . home_url() . '" class="hover:text-black transition-colors">Home</a>';
 
-    if (is_single() && get_post_type() === 'healthedia_article') {
+    if (is_single() && in_array(get_post_type(), ['healthedia_article', 'healthedia_post', 'healthedia_ext_res', 'healthedia_journal'])) {
         echo $separator;
         echo '<a href="' . home_url('/archive-search') . '" class="hover:text-black transition-colors">Journal Archive</a>';
         echo $separator;

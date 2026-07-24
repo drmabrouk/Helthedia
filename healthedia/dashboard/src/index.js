@@ -16,6 +16,9 @@ const Dashboard = () => {
 	// Settings sub-tabs
 	const [settingsTab, setSettingsTab] = useState('general');
 
+	// Articles sub-tabs
+	const [articlesTab, setArticlesTab] = useState('healthedia_post');
+
 	// Search state
 	const [userSearch, setUserSearch] = useState('');
 	const [researcherSearch, setResearcherSearch] = useState('');
@@ -54,7 +57,7 @@ const Dashboard = () => {
 			if (activeTab === 'analytics') setStats(await apiFetch('stats'));
 			else if (activeTab === 'users') setUsers(await apiFetch('users'));
 			else if (activeTab === 'researchers') setResearchers(await apiFetch('researchers'));
-			else if (activeTab === 'articles') setArticles(await apiFetch('articles'));
+			else if (activeTab === 'articles') setArticles(await apiFetch(`articles?type=${articlesTab}`));
 			else if (activeTab === 'certificates') setCertificates(await apiFetch('certificates'));
 			else if (activeTab === 'verifications') setVerificationRequests(await apiFetch('verifications'));
 			else if (activeTab === 'settings') setSettings(await apiFetch('settings'));
@@ -94,7 +97,7 @@ const Dashboard = () => {
 
 	useEffect(() => {
 		loadData();
-	}, [activeTab]);
+	}, [activeTab, articlesTab]);
 
 	const saveSettings = async (e) => {
 		e.preventDefault();
@@ -188,7 +191,9 @@ const Dashboard = () => {
 					<button onClick={() => { setActiveTab('analytics'); closeSidebar(); }} className={`w-full text-left px-4 py-4 md:py-3 rounded-xl transition-colors ${activeTab === 'analytics' ? 'bg-black text-white' : 'text-gray-500 hover:bg-gray-50 hover:text-black'}`}>System Analytics</button>
 					<button onClick={() => { setActiveTab('users'); closeSidebar(); }} className={`w-full text-left px-4 py-4 md:py-3 rounded-xl transition-colors ${activeTab === 'users' ? 'bg-black text-white' : 'text-gray-500 hover:bg-gray-50 hover:text-black'}`}>System Users</button>
 					<button onClick={() => { setActiveTab('researchers'); closeSidebar(); }} className={`w-full text-left px-4 py-4 md:py-3 rounded-xl transition-colors ${activeTab === 'researchers' ? 'bg-black text-white' : 'text-gray-500 hover:bg-gray-50 hover:text-black'}`}>Researchers Mgmt</button>
-					<button onClick={() => { setActiveTab('articles'); closeSidebar(); }} className={`w-full text-left px-4 py-4 md:py-3 rounded-xl transition-colors ${activeTab === 'articles' ? 'bg-black text-white' : 'text-gray-500 hover:bg-gray-50 hover:text-black'}`}>Articles Mgmt</button>
+					<button onClick={() => { setActiveTab('articles'); setArticlesTab('healthedia_post'); closeSidebar(); }} className={`w-full text-left px-4 py-4 md:py-3 rounded-xl transition-colors ${activeTab === 'articles' && articlesTab === 'healthedia_post' ? 'bg-black text-white' : 'text-gray-500 hover:bg-gray-50 hover:text-black'}`}>Articles Mgmt</button>
+					<button onClick={() => { setActiveTab('articles'); setArticlesTab('healthedia_ext_res'); closeSidebar(); }} className={`w-full text-left px-4 py-4 md:py-3 rounded-xl transition-colors ${activeTab === 'articles' && articlesTab === 'healthedia_ext_res' ? 'bg-black text-white' : 'text-gray-500 hover:bg-gray-50 hover:text-black'}`}>External Research</button>
+					<button onClick={() => { setActiveTab('articles'); setArticlesTab('healthedia_journal'); closeSidebar(); }} className={`w-full text-left px-4 py-4 md:py-3 rounded-xl transition-colors ${activeTab === 'articles' && articlesTab === 'healthedia_journal' ? 'bg-black text-white' : 'text-gray-500 hover:bg-gray-50 hover:text-black'}`}>Scientific Journal</button>
 					<button onClick={() => { setActiveTab('certificates'); closeSidebar(); }} className={`w-full text-left px-4 py-4 md:py-3 rounded-xl transition-colors ${activeTab === 'certificates' ? 'bg-black text-white' : 'text-gray-500 hover:bg-gray-50 hover:text-black'}`}>Certificates</button>
 					<button onClick={() => { setActiveTab('verifications'); closeSidebar(); }} className={`w-full text-left px-4 py-4 md:py-3 rounded-xl transition-colors ${activeTab === 'verifications' ? 'bg-black text-white' : 'text-gray-500 hover:bg-gray-50 hover:text-black'}`}>Verify Requests</button>
 					<button onClick={() => { setActiveTab('settings'); closeSidebar(); }} className={`w-full text-left px-4 py-4 md:py-3 rounded-xl transition-colors ${activeTab === 'settings' ? 'bg-black text-white' : 'text-gray-500 hover:bg-gray-50 hover:text-black'}`}>Global Settings</button>
@@ -326,7 +331,9 @@ const Dashboard = () => {
 					<>
 						<header className="mb-6 md:mb-8 border-b border-[#E0E0E0] pb-6 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
 							<div>
-								<h2 className="text-2xl md:text-3xl font-bold uppercase tracking-tight">Articles Management</h2>
+								<h2 className="text-2xl md:text-3xl font-bold uppercase tracking-tight">
+									{articlesTab === 'healthedia_post' ? 'Articles Management' : (articlesTab === 'healthedia_ext_res' ? 'External Research' : 'Scientific Journal')}
+								</h2>
 								<div className="mt-4 flex flex-wrap gap-4 items-center">
 									<div className="relative">
 										<input type="text" placeholder="Search articles..." value={articleSearch} onChange={e => setArticleSearch(e.target.value)} className="w-full md:w-64 border border-[#E0E0E0] rounded-lg pl-10 pr-4 py-2 text-sm font-sans outline-none focus:border-black" />

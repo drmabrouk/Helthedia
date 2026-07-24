@@ -17,13 +17,14 @@ class Healthedia_Router {
 		add_rewrite_rule('^archive-search/?', 'index.php?healthedia_page=archive_search', 'top');
 
 		add_rewrite_rule('^profile/([^/]+)/?', 'index.php?healthedia_profile=$matches[1]', 'top');
-		add_rewrite_rule('^u/([^/]+)/?', 'index.php?healthedia_username=$matches[1]', 'top');
 
 		add_rewrite_rule('^account-settings/?', 'index.php?healthedia_page=member_settings', 'top');
 		add_rewrite_rule('^saved-research/?', 'index.php?healthedia_page=member_saved', 'top');
 		add_rewrite_rule('^my-requests/?', 'index.php?healthedia_page=member_requests', 'top');
 
-		add_rewrite_rule('^submit-manuscript/?', 'index.php?healthedia_page=submit_manuscript', 'top');
+		add_rewrite_rule('^submit-article/?', 'index.php?healthedia_page=submit_article', 'top');
+		add_rewrite_rule('^submit-research/?', 'index.php?healthedia_page=submit_research', 'top');
+		add_rewrite_rule('^submit-journal/?', 'index.php?healthedia_page=submit_journal', 'top');
 
 		add_rewrite_tag('%healthedia_dashboard%', '1');
 		add_rewrite_tag('%healthedia_auth_page%', '1');
@@ -77,12 +78,12 @@ class Healthedia_Router {
 			return HEALTHEDIA_PLUGIN_DIR . "public/views/page-{$page}.php";
 		}
 
-		if ($page == 'submit_manuscript') {
+		if (in_array($page, ['submit_article', 'submit_research', 'submit_journal'])) {
 			if (!is_user_logged_in()) {
 				wp_redirect(home_url('/login'));
 				die();
 			}
-			return HEALTHEDIA_PLUGIN_DIR . 'public/views/page-submit-manuscript.php';
+			return HEALTHEDIA_PLUGIN_DIR . "public/views/page-{$page}.php";
 		}
 
 		$profile = get_query_var('healthedia_profile');
@@ -91,6 +92,10 @@ class Healthedia_Router {
 		}
 
 		global $post, $wp_query;
+
+		if (is_single() && in_array(get_post_type(), ['healthedia_post', 'healthedia_ext_res', 'healthedia_journal', 'healthedia_article'])) {
+			return HEALTHEDIA_PLUGIN_DIR . 'public/views/single-article.php';
+		}
 
 		// Custom Root-level Username Routing
 		$request_path = trim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), '/');
