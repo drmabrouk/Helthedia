@@ -120,6 +120,18 @@ class Healthedia_Profile_Endpoints {
 			wp_clear_auth_cookie();
 			wp_set_current_user($user_id);
 			wp_set_auth_cookie($user_id);
+
+			require_once HEALTHEDIA_PLUGIN_DIR . 'modules/Notifications/class-notification-api.php';
+			Healthedia_Notification_API::add_notification($user_id, "Your account password has been updated.", home_url('/account-settings'));
+		}
+
+		if (!empty($params['user_email'])) {
+			$new_email = sanitize_email($params['user_email']);
+			$current_user = get_userdata($user_id);
+			if ($new_email !== $current_user->user_email && !email_exists($new_email)) {
+				require_once HEALTHEDIA_PLUGIN_DIR . 'modules/Notifications/class-notification-api.php';
+				Healthedia_Notification_API::add_notification($user_id, "Your primary email address was updated.", home_url('/account-settings'));
+			}
 		}
 
 		if (!empty($params['_healthedia_username'])) {

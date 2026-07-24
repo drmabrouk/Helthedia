@@ -26,6 +26,7 @@
 
 				<!-- Desktop Nav -->
 				<nav class="hidden md:flex items-center gap-6 font-mono text-sm uppercase tracking-wider pl-6 border-l border-[#E0E0E0]">
+					<a href="<?php echo home_url(); ?>" class="text-gray-500 hover:text-black transition-colors">Home</a>
 					<a href="<?php echo home_url('/journal'); ?>" class="text-gray-500 hover:text-black transition-colors">Journal</a>
 					<a href="<?php echo home_url('/directory'); ?>" class="text-gray-500 hover:text-black transition-colors">Directory</a>
 				</nav>

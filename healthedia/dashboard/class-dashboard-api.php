@@ -285,6 +285,7 @@ class Healthedia_Dashboard_API {
 			return new WP_Error('missing_ids', 'No items selected.', array('status' => 400));
 		}
 
+		require_once HEALTHEDIA_PLUGIN_DIR . 'modules/Notifications/class-notification-api.php';
 		foreach ($ids as $id) {
 			$id = intval($id);
 			if ($action === 'delete') {
@@ -294,6 +295,15 @@ class Healthedia_Dashboard_API {
 					'ID' => $id,
 					'post_status' => $action
 				));
+				$post = get_post($id);
+				if ($post) {
+					$title = $post->post_title;
+					if ($action === 'publish') {
+						Healthedia_Notification_API::add_notification($post->post_author, "Your submission '{$title}' has been approved and published.", get_permalink($id));
+					} elseif ($action === 'draft') {
+						Healthedia_Notification_API::add_notification($post->post_author, "Your submission '{$title}' has been un-published.", home_url('/my-requests'));
+					}
+				}
 			}
 		}
 
@@ -304,10 +314,23 @@ class Healthedia_Dashboard_API {
 		$id = $request->get_param('id');
 		$params = $request->get_json_params();
 		if (isset($params['status'])) {
+			$status = sanitize_text_field($params['status']);
 			wp_update_post(array(
 				'ID' => $id,
-				'post_status' => sanitize_text_field($params['status'])
+				'post_status' => $status
 			));
+
+			// Notify author
+			$post = get_post($id);
+			if ($post) {
+				require_once HEALTHEDIA_PLUGIN_DIR . 'modules/Notifications/class-notification-api.php';
+				$title = $post->post_title;
+				if ($status === 'publish') {
+					Healthedia_Notification_API::add_notification($post->post_author, "Your submission '{$title}' has been approved and published.", get_permalink($id));
+				} elseif ($status === 'draft' || $status === 'rejected') {
+					Healthedia_Notification_API::add_notification($post->post_author, "Your submission '{$title}' has been un-published or rejected.", home_url('/my-requests'));
+				}
+			}
 		}
 		return rest_ensure_response(array('success' => true));
 	}

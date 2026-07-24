@@ -10,8 +10,17 @@ include HEALTHEDIA_PLUGIN_DIR . 'public/views/layout-header.php';
 	<!-- Sidebar -->
 	<aside class="w-full md:w-1/4 border-r border-[#E0E0E0] pr-6">
 		<div class="sticky top-8">
-			<h3 class="font-sans font-bold uppercase tracking-wider mb-4 text-sm border-b border-[#E0E0E0] pb-2">Article Information</h3>
-			<p class="font-mono text-xs text-gray-500 leading-relaxed mb-6">Standard educational and informational content published on Healthedia.</p>
+			<h3 class="font-sans font-bold uppercase tracking-wider mb-4 text-sm border-b border-[#E0E0E0] pb-2">Publication Index</h3>
+			<p class="font-mono text-xs text-gray-500 leading-relaxed mb-6">This research was published externally and has been indexed by the author for public dissemination.</p>
+
+			<?php
+			$file_url = get_post_meta(get_the_ID(), '_healthedia_file_url', true);
+			if ($file_url):
+			?>
+			<a href="<?php echo esc_url($file_url); ?>" target="_blank" class="block w-full text-center bg-black text-white px-4 py-3 rounded-xl font-mono text-xs uppercase tracking-widest hover:bg-gray-800 transition-colors">
+				View Full Document
+			</a>
+			<?php endif; ?>
 
 			<div class="mt-12">
 				<h3 class="font-sans font-bold uppercase tracking-wider mb-4 text-sm border-b border-[#E0E0E0] pb-2">Tools</h3>
@@ -31,7 +40,8 @@ include HEALTHEDIA_PLUGIN_DIR . 'public/views/layout-header.php';
 		?>
 
 		<div class="flex gap-2 mb-4 font-mono text-xs">
-			<span class="px-2 py-1 border border-[#111111] text-[#111111] rounded-full uppercase tracking-wider">Standard Article</span>
+			<span class="px-2 py-1 border border-black text-black rounded-full uppercase tracking-wider">External Research</span>
+			<span class="px-2 py-1 bg-gray-100 text-gray-600 rounded-full uppercase tracking-wider">Indexed Record</span>
 		</div>
 
 		<h1 class="text-4xl md:text-5xl font-sans font-bold leading-tight tracking-tighter mb-6"><?php the_title(); ?></h1>

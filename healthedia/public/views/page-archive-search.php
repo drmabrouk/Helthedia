@@ -56,11 +56,27 @@ $query = isset($_GET['q']) ? sanitize_text_field($_GET['q']) : '';
 	<!-- Main Content Area -->
 	<div class="flex-grow">
 		<!-- Search Header -->
-		<header class="mb-10 w-full relative border border-[#E0E0E0] rounded-full flex items-center p-2 shadow-sm bg-white hover:border-black transition-colors">
-			<svg class="w-5 h-5 ml-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-			<input type="text" id="archive-search-input" value="<?php echo esc_attr($query); ?>" placeholder="Search archive..." class="flex-grow px-4 py-2 font-sans text-lg outline-none bg-transparent">
-			<button id="btn-update-search" class="bg-black text-white px-8 py-3 rounded-full font-sans uppercase text-[10px] font-bold tracking-widest hover:bg-gray-800 transition-colors">Update</button>
-		</header>
+		<div class="relative">
+			<header class="mb-10 w-full relative border border-[#E0E0E0] rounded-full flex items-center p-2 shadow-sm bg-white hover:border-black transition-colors z-30">
+				<svg class="w-5 h-5 ml-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+				<input type="text" id="archive-search-input" autocomplete="off" value="<?php echo esc_attr($query); ?>" placeholder="Search archive..." class="flex-grow px-4 py-2 font-sans text-lg outline-none bg-transparent">
+				<button id="btn-update-search" class="bg-black text-white px-8 py-3 rounded-full font-sans uppercase text-[10px] font-bold tracking-widest hover:bg-gray-800 transition-colors flex items-center gap-2">
+					<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+					Update
+				</button>
+			</header>
+
+			<!-- Search History Dropdown -->
+			<div id="search-history-dropdown" class="hidden absolute top-14 left-0 w-full bg-white border border-[#E0E0E0] rounded-2xl shadow-lg z-20 overflow-hidden pt-4 pb-2">
+				<div class="px-6 py-3 border-b border-[#E0E0E0] flex justify-between items-center bg-gray-50">
+					<span class="font-sans font-bold text-[10px] uppercase tracking-widest text-gray-500">Recent Searches</span>
+					<button id="btn-clear-history" class="font-mono text-[10px] text-red-500 hover:text-red-700 uppercase tracking-widest transition-colors">Clear History</button>
+				</div>
+				<ul id="search-history-list" class="max-h-64 overflow-y-auto">
+					<!-- History items populated via JS -->
+				</ul>
+			</div>
+		</div>
 
 		<div class="flex justify-between items-center mb-6 font-mono text-[10px] text-gray-500 uppercase tracking-widest">
 			<div id="search-meta">Showing matches for "<?php echo esc_html($query); ?>"</div>

@@ -12,9 +12,13 @@ class Healthedia_Profile_Model {
 				global $wpdb;
 				$table = $wpdb->prefix . 'healthedia_metrics';
 
-				$existing = $wpdb->get_var( $wpdb->prepare( "SELECT id FROM $table WHERE object_id = %d AND object_type = 'user'", $user_id ) );
+				$existing = $wpdb->get_row( $wpdb->prepare( "SELECT id, views FROM $table WHERE object_id = %d AND object_type = 'user'", $user_id ) );
 				if ( $existing ) {
-					$wpdb->query( $wpdb->prepare( "UPDATE $table SET views = views + 1 WHERE id = %d", $existing ) );
+					$wpdb->query( $wpdb->prepare( "UPDATE $table SET views = views + 1 WHERE id = %d", $existing->id ) );
+					if ( ($existing->views + 1) % 100 === 0 ) {
+						require_once HEALTHEDIA_PLUGIN_DIR . 'modules/Notifications/class-notification-api.php';
+						Healthedia_Notification_API::add_notification($user_id, "Your public profile has reached " . ($existing->views + 1) . " views.", home_url('/'.get_user_meta($user_id, '_healthedia_username', true)));
+					}
 				} else {
 					$wpdb->insert( $table, array(
 						'object_id' => $user_id,

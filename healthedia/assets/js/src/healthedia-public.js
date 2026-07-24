@@ -39,12 +39,103 @@ document.addEventListener('DOMContentLoaded', () => {
 		}
 	}
 
+	// Search History & Autocomplete Logic
+	const searchHistoryKey = 'healthedia_search_history';
+	const archiveSearchInput = document.getElementById('archive-search-input') || gatewaySearchInput;
+	const searchHistoryDropdown = document.getElementById('search-history-dropdown');
+	const searchHistoryList = document.getElementById('search-history-list');
+	const btnClearHistory = document.getElementById('btn-clear-history');
+
+	const getSearchHistory = () => {
+		try { return JSON.parse(localStorage.getItem(searchHistoryKey)) || []; }
+		catch(e) { return []; }
+	};
+
+	const saveSearchHistory = (query) => {
+		if (!query.trim()) return;
+		let history = getSearchHistory();
+		history = history.filter(q => q.toLowerCase() !== query.toLowerCase()); // Remove duplicates
+		history.unshift(query.trim()); // Add to top
+		if (history.length > 10) history = history.slice(0, 10); // Keep last 10
+		localStorage.setItem(searchHistoryKey, JSON.stringify(history));
+	};
+
+	const renderSearchHistory = () => {
+		if (!searchHistoryList) return;
+		const history = getSearchHistory();
+		if (history.length === 0) {
+			searchHistoryList.innerHTML = '<li class="px-6 py-4 font-mono text-[10px] text-gray-400 uppercase tracking-widest text-center">No recent searches</li>';
+			return;
+		}
+
+		searchHistoryList.innerHTML = history.map(q => `
+			<li class="history-item px-6 py-3 font-sans text-sm hover:bg-gray-50 cursor-pointer flex items-center gap-3 transition-colors border-b border-[#E0E0E0] last:border-0" data-query="${escapeHTML(q)}">
+				<svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+				${escapeHTML(q)}
+			</li>
+		`).join('');
+
+		document.querySelectorAll('.history-item').forEach(item => {
+			item.addEventListener('click', function() {
+				archiveSearchInput.value = this.getAttribute('data-query');
+				if (searchHistoryDropdown) searchHistoryDropdown.classList.add('hidden');
+				if (archiveSearchInput.closest('form')) {
+					archiveSearchInput.closest('form').submit();
+				} else {
+					const btnUpdate = document.getElementById('btn-update-search');
+					if (btnUpdate) btnUpdate.click();
+				}
+			});
+		});
+	};
+
+	if (archiveSearchInput) {
+		archiveSearchInput.addEventListener('focus', () => {
+			if (searchHistoryDropdown) {
+				renderSearchHistory();
+				searchHistoryDropdown.classList.remove('hidden');
+			}
+		});
+
+		// Track form submissions
+		const form = archiveSearchInput.closest('form');
+		if (form) {
+			form.addEventListener('submit', () => saveSearchHistory(archiveSearchInput.value));
+		}
+
+		const btnUpdate = document.getElementById('btn-update-search');
+		if (btnUpdate) {
+			btnUpdate.addEventListener('click', () => saveSearchHistory(archiveSearchInput.value));
+		}
+
+		// Close dropdown when clicking outside
+		document.addEventListener('click', (e) => {
+			if (searchHistoryDropdown && !archiveSearchInput.contains(e.target) && !searchHistoryDropdown.contains(e.target)) {
+				searchHistoryDropdown.classList.add('hidden');
+			}
+		});
+	}
+
+	if (btnClearHistory) {
+		btnClearHistory.addEventListener('click', () => {
+			localStorage.removeItem(searchHistoryKey);
+			renderSearchHistory();
+		});
+	}
+
 	// Search Suggestion Tags
 	document.querySelectorAll('.search-tag').forEach(tag => {
 		tag.addEventListener('click', function() {
-			if (gatewaySearchInput) {
-				gatewaySearchInput.value = this.innerText.trim();
-				gatewaySearchInput.closest('form').submit();
+			if (archiveSearchInput) {
+				const query = this.innerText.trim();
+				archiveSearchInput.value = query;
+				saveSearchHistory(query);
+				if (archiveSearchInput.closest('form')) {
+					archiveSearchInput.closest('form').submit();
+				} else {
+					const btnUpdate = document.getElementById('btn-update-search');
+					if (btnUpdate) btnUpdate.click();
+				}
 			}
 		});
 	});
@@ -196,20 +287,34 @@ document.addEventListener('DOMContentLoaded', () => {
 
 				response.data.forEach(user => {
 					const card = document.createElement('div');
-					card.className = 'border border-[#E0E0E0] rounded-2xl p-6 hover:border-black transition-colors bg-white shadow-sm flex flex-col items-center text-center';
+					card.className = 'border border-[#E0E0E0] rounded-2xl p-8 hover:border-black transition-colors bg-white shadow-sm flex flex-col relative h-full';
 					card.innerHTML = `
-						<div class="w-16 h-16 bg-gray-100 rounded-full mb-4 flex items-center justify-center text-gray-400 font-sans font-bold text-xl border border-[#E0E0E0]">
-							${escapeHTML(user.name).charAt(0)}
-						</div>
-						<div class="flex items-center justify-center gap-1.5 mb-1 w-full">
-							<a href="${user.url}" class="font-sans font-bold text-xl hover:underline truncate">${escapeHTML(user.name)}</a>
-							${user.verified ? '<svg class="w-4 h-4 text-blue-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>' : ''}
+						${user.verified ? '<div class="absolute top-6 right-6" title="Verified Researcher"><svg class="w-5 h-5 text-black" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg></div>' : ''}
+
+						<div class="flex items-center gap-5 mb-6">
+							<div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center text-gray-400 font-sans font-bold text-2xl border border-[#E0E0E0] shrink-0">
+								${escapeHTML(user.name).charAt(0)}
+							</div>
+							<div>
+								<a href="${user.url}" class="font-sans font-bold text-lg hover:underline line-clamp-1 block text-black">${escapeHTML(user.name)}</a>
+								<div class="font-mono text-[10px] text-gray-500 uppercase tracking-widest mt-1 line-clamp-1">${escapeHTML(user.specialty || 'Independent')}</div>
+							</div>
 						</div>
 
-						<div class="bg-gray-50 border border-[#E0E0E0] rounded-xl p-3 w-full mt-4">
-							<div class="font-mono text-[10px] text-gray-500 uppercase tracking-widest truncate mb-1">Spec: ${escapeHTML(user.specialty || 'Independent')}</div>
-							<div class="font-mono text-[10px] text-gray-400 uppercase tracking-widest truncate">Views: <span class="text-black font-bold">${user.views}</span></div>
+						<div class="grid grid-cols-2 gap-3 mb-6 font-mono text-[10px] uppercase tracking-widest border-t border-b border-[#E0E0E0] py-4 mt-auto">
+							<div>
+								<div class="text-gray-400 mb-1">Publications</div>
+								<div class="text-black font-bold text-base font-sans leading-none">0</div>
+							</div>
+							<div>
+								<div class="text-gray-400 mb-1">Total Views</div>
+								<div class="text-black font-bold text-base font-sans leading-none">${user.views}</div>
+							</div>
 						</div>
+
+						<a href="${user.url}" class="w-full block text-center border border-[#E0E0E0] rounded-full py-2.5 font-mono text-[10px] uppercase tracking-widest hover:border-black hover:bg-gray-50 transition-colors text-black font-bold">
+							View Academic Profile
+						</a>
 					`;
 					dirGrid.appendChild(card);
 				});

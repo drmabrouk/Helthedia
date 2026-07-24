@@ -47,6 +47,10 @@ const Dashboard = () => {
 				...options.headers
 			}
 		});
+		if (res.status === 401 || res.status === 403) {
+			window.location.href = '/login'; // Redirect unauthenticated/unauthorized users immediately
+			return;
+		}
 		if (!res.ok) throw new Error('API Error');
 		return res.json();
 	};
@@ -62,9 +66,10 @@ const Dashboard = () => {
 			else if (activeTab === 'verifications') setVerificationRequests(await apiFetch('verifications'));
 			else if (activeTab === 'settings') setSettings(await apiFetch('settings'));
 		} catch (err) {
-			console.error(err);
+			console.error('Failed to load data:', err);
+		} finally {
+			setLoading(false);
 		}
-		setLoading(false);
 	};
 
 	const deleteArticle = async (id) => {
@@ -262,12 +267,12 @@ const Dashboard = () => {
 											<td className="py-4 px-6 font-mono text-[10px] uppercase">{u.roles.join(', ')}</td>
 											<td className="py-4 px-6 font-mono text-xs">{new Date(u.registered).toLocaleDateString()}</td>
 											<td className="py-4 px-6 text-right space-x-2 whitespace-nowrap">
-												<button onClick={() => {
+												<button title="Edit" onClick={() => {
 													setEditingUser(u);
 													setIsRestrictedChecked(u.is_restricted);
 													setShowUserModal(true);
-												}} className="border border-[#E0E0E0] px-3 py-1 rounded font-mono text-[10px] uppercase hover:border-black transition-colors">Edit</button>
-												<button onClick={() => deleteUser(u.id)} className="border border-red-200 text-red-500 px-3 py-1 rounded font-mono text-[10px] uppercase hover:bg-red-50 transition-colors">Delete</button>
+												}} className="w-8 h-8 inline-flex items-center justify-center bg-white border border-[#E0E0E0] rounded-lg text-gray-400 hover:text-black hover:border-black transition-colors"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg></button>
+												<button title="Delete" onClick={() => deleteUser(u.id)} className="w-8 h-8 inline-flex items-center justify-center bg-white border border-[#E0E0E0] rounded-lg text-gray-400 hover:text-red-500 hover:border-red-500 hover:bg-red-50 transition-colors"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
 											</td>
 										</tr>
 									))}
@@ -316,8 +321,8 @@ const Dashboard = () => {
 												{r.is_mock ? <span className="bg-gray-200 text-black px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-widest">Mock Data</span> : <span className="bg-black text-white px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-widest">Real</span>}
 											</td>
 											<td className="py-4 px-6 text-right space-x-2 whitespace-nowrap">
-												<button onClick={() => { setEditingResearcher(r); setShowResearcherModal(true); }} className="border border-[#E0E0E0] px-3 py-1 rounded font-mono text-[10px] uppercase hover:border-black transition-colors">Edit</button>
-												<button onClick={() => deleteResearcher(r.id)} className="border border-red-200 text-red-500 px-3 py-1 rounded font-mono text-[10px] uppercase hover:bg-red-50 transition-colors">Del</button>
+												<button title="Edit" onClick={() => { setEditingResearcher(r); setShowResearcherModal(true); }} className="w-8 h-8 inline-flex items-center justify-center bg-white border border-[#E0E0E0] rounded-lg text-gray-400 hover:text-black hover:border-black transition-colors"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg></button>
+												<button title="Delete" onClick={() => deleteResearcher(r.id)} className="w-8 h-8 inline-flex items-center justify-center bg-white border border-[#E0E0E0] rounded-lg text-gray-400 hover:text-red-500 hover:border-red-500 hover:bg-red-50 transition-colors"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
 											</td>
 										</tr>
 									))}
@@ -404,9 +409,9 @@ const Dashboard = () => {
 											</td>
 											<td className="py-4 px-6 font-mono text-xs text-gray-500">{new Date(a.date).toLocaleDateString()}</td>
 											<td className="py-4 px-6 text-right space-x-2 whitespace-nowrap">
-												{a.status === 'pending' && <button onClick={async () => { await apiFetch(`articles/${a.id}/status`, { method: 'PUT', body: JSON.stringify({status: 'publish'}) }); loadData(); }} className="border border-green-200 text-green-600 px-3 py-1 rounded font-mono text-[10px] uppercase hover:bg-green-50 transition-colors">Approve</button>}
-												{a.status === 'publish' && <button onClick={async () => { await apiFetch(`articles/${a.id}/status`, { method: 'PUT', body: JSON.stringify({status: 'draft'}) }); loadData(); }} className="border border-yellow-200 text-yellow-600 px-3 py-1 rounded font-mono text-[10px] uppercase hover:bg-yellow-50 transition-colors">Unpublish</button>}
-												<button onClick={() => deleteArticle(a.id)} className="border border-red-200 text-red-500 px-3 py-1 rounded font-mono text-[10px] uppercase hover:bg-red-50 transition-colors">Del</button>
+												{a.status === 'pending' && <button title="Approve" onClick={async () => { await apiFetch(`articles/${a.id}/status`, { method: 'PUT', body: JSON.stringify({status: 'publish'}) }); loadData(); }} className="w-8 h-8 inline-flex items-center justify-center bg-white border border-[#E0E0E0] rounded-lg text-gray-400 hover:text-green-600 hover:border-green-600 hover:bg-green-50 transition-colors"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg></button>}
+												{a.status === 'publish' && <button title="Unpublish" onClick={async () => { await apiFetch(`articles/${a.id}/status`, { method: 'PUT', body: JSON.stringify({status: 'draft'}) }); loadData(); }} className="w-8 h-8 inline-flex items-center justify-center bg-white border border-[#E0E0E0] rounded-lg text-gray-400 hover:text-yellow-600 hover:border-yellow-600 hover:bg-yellow-50 transition-colors"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></button>}
+												<button title="Delete" onClick={() => deleteArticle(a.id)} className="w-8 h-8 inline-flex items-center justify-center bg-white border border-[#E0E0E0] rounded-lg text-gray-400 hover:text-red-500 hover:border-red-500 hover:bg-red-50 transition-colors"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
 											</td>
 										</tr>
 									))}
@@ -453,8 +458,8 @@ const Dashboard = () => {
 												{c.status === 'publish' ? <span className="bg-green-100 text-green-600 px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-widest">Active</span> : <span className="bg-gray-200 text-gray-600 px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-widest">Inactive</span>}
 											</td>
 											<td className="py-4 px-6 text-right space-x-2 whitespace-nowrap">
-												<button onClick={() => { setEditingCertificate(c); setShowCertificateModal(true); }} className="border border-[#E0E0E0] px-3 py-1 rounded font-mono text-[10px] uppercase hover:border-black transition-colors">Edit</button>
-												<button onClick={() => deleteCertificate(c.id)} className="border border-red-200 text-red-500 px-3 py-1 rounded font-mono text-[10px] uppercase hover:bg-red-50 transition-colors">Del</button>
+												<button title="Edit" onClick={() => { setEditingCertificate(c); setShowCertificateModal(true); }} className="w-8 h-8 inline-flex items-center justify-center bg-white border border-[#E0E0E0] rounded-lg text-gray-400 hover:text-black hover:border-black transition-colors"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg></button>
+												<button title="Delete" onClick={() => deleteCertificate(c.id)} className="w-8 h-8 inline-flex items-center justify-center bg-white border border-[#E0E0E0] rounded-lg text-gray-400 hover:text-red-500 hover:border-red-500 hover:bg-red-50 transition-colors"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
 											</td>
 										</tr>
 									))}
@@ -501,8 +506,8 @@ const Dashboard = () => {
 												{v.document_url ? <a href={v.document_url} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline flex items-center gap-1"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg> View</a> : 'None'}
 											</td>
 											<td className="py-4 px-6 text-right space-x-2 whitespace-nowrap">
-												<button onClick={async () => { if(window.confirm('Approve this request?')) { await apiFetch(`verifications/${v.id}/approve`, { method: 'POST' }); loadData(); } }} className="border border-green-200 text-green-600 px-3 py-1 rounded font-mono text-[10px] uppercase hover:bg-green-50 transition-colors">Approve</button>
-												<button onClick={async () => { const reason = window.prompt('Reason for rejection:'); if(reason !== null) { await apiFetch(`verifications/${v.id}/reject`, { method: 'POST', body: JSON.stringify({reason}) }); loadData(); } }} className="border border-red-200 text-red-500 px-3 py-1 rounded font-mono text-[10px] uppercase hover:bg-red-50 transition-colors">Reject</button>
+												<button title="Approve" onClick={async () => { if(window.confirm('Approve this request?')) { await apiFetch(`verifications/${v.id}/approve`, { method: 'POST' }); loadData(); } }} className="w-8 h-8 inline-flex items-center justify-center bg-white border border-[#E0E0E0] rounded-lg text-gray-400 hover:text-green-600 hover:border-green-600 hover:bg-green-50 transition-colors"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg></button>
+												<button title="Reject" onClick={async () => { const reason = window.prompt('Reason for rejection:'); if(reason !== null) { await apiFetch(`verifications/${v.id}/reject`, { method: 'POST', body: JSON.stringify({reason}) }); loadData(); } }} className="w-8 h-8 inline-flex items-center justify-center bg-white border border-[#E0E0E0] rounded-lg text-gray-400 hover:text-red-500 hover:border-red-500 hover:bg-red-50 transition-colors"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
 											</td>
 										</tr>
 									))}

@@ -234,6 +234,9 @@ class Healthedia_Auth_Endpoints {
 		wp_set_current_user($user->ID);
 		wp_set_auth_cookie($user->ID);
 
+		require_once HEALTHEDIA_PLUGIN_DIR . 'modules/Notifications/class-notification-api.php';
+		Healthedia_Notification_API::add_notification($user->ID, "Your password was successfully reset.", home_url('/account-settings'));
+
 		return rest_ensure_response(array('success' => true, 'message' => 'Password reset successfully.'));
 	}
 }

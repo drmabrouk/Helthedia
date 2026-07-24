@@ -94,6 +94,9 @@ class Healthedia_Router {
 		global $post, $wp_query;
 
 		if (is_single() && in_array(get_post_type(), ['healthedia_post', 'healthedia_ext_res', 'healthedia_journal', 'healthedia_article'])) {
+			$type = get_post_type();
+			if ($type === 'healthedia_journal') return HEALTHEDIA_PLUGIN_DIR . 'public/views/single-journal.php';
+			if ($type === 'healthedia_ext_res') return HEALTHEDIA_PLUGIN_DIR . 'public/views/single-ext_res.php';
 			return HEALTHEDIA_PLUGIN_DIR . 'public/views/single-article.php';
 		}
 
