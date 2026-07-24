@@ -59,6 +59,7 @@ class Healthedia {
 
 		// Register Institution Custom Post Type
 		$this->loader->add_action('init', $this, 'register_institution_cpt');
+		$this->loader->add_action('init', $this, 'register_certificate_cpt');
 
 		$seo = new Healthedia_SEO();
 		$this->loader->add_action( 'wp_head', $seo, 'inject_metadata', 5 );
@@ -77,6 +78,19 @@ class Healthedia {
 			'has_archive' => false,
 			'show_in_rest' => true,
 			'supports' => array('title', 'editor')
+		));
+	}
+
+	public function register_certificate_cpt() {
+		register_post_type('healthedia_cert', array(
+			'labels' => array(
+				'name' => 'Certificates',
+				'singular_name' => 'Certificate'
+			),
+			'public' => false,
+			'has_archive' => false,
+			'show_in_rest' => true,
+			'supports' => array('title')
 		));
 	}
 

@@ -6,19 +6,33 @@ const Dashboard = () => {
 	const [stats, setStats] = useState({ users: 0, articles: 0, total_views: 0 });
 	const [users, setUsers] = useState([]);
 	const [researchers, setResearchers] = useState([]);
-	const [settings, setSettings] = useState({ site_name: '', site_desc: '', admin_email: '', mock_data_seeded: false, enable_registration: 'yes', auth_maintenance_mode: 'no' });
+	const [articles, setArticles] = useState([]);
+	const [certificates, setCertificates] = useState([]);
+	const [settings, setSettings] = useState({ site_name: '', site_desc: '', admin_email: '', mock_data_seeded: false, enable_registration: 'yes', auth_maintenance_mode: 'no', privacy_policy_url: '', terms_url: '' });
 	const [loading, setLoading] = useState(true);
 	const [sidebarOpen, setSidebarOpen] = useState(false);
+
+	// Settings sub-tabs
+	const [settingsTab, setSettingsTab] = useState('general');
 
 	// Search state
 	const [userSearch, setUserSearch] = useState('');
 	const [researcherSearch, setResearcherSearch] = useState('');
+	const [articleSearch, setArticleSearch] = useState('');
+	const [articleStatusFilter, setArticleStatusFilter] = useState('all');
+	const [articleCategoryFilter, setArticleCategoryFilter] = useState('all');
+	const [articleSort, setArticleSort] = useState('desc');
+	const [selectedArticles, setSelectedArticles] = useState([]);
+	const [certificateSearch, setCertificateSearch] = useState('');
 
 	// Modals
 	const [showUserModal, setShowUserModal] = useState(false);
 	const [editingUser, setEditingUser] = useState(null);
+	const [isRestrictedChecked, setIsRestrictedChecked] = useState(false);
 	const [showResearcherModal, setShowResearcherModal] = useState(false);
 	const [editingResearcher, setEditingResearcher] = useState(null);
+	const [showCertificateModal, setShowCertificateModal] = useState(false);
+	const [editingCertificate, setEditingCertificate] = useState(null);
 
 	const apiFetch = async (endpoint, options = {}) => {
 		const res = await fetch(`/wp-json/healthedia/v1/admin/${endpoint}`, {
@@ -39,11 +53,41 @@ const Dashboard = () => {
 			if (activeTab === 'analytics') setStats(await apiFetch('stats'));
 			else if (activeTab === 'users') setUsers(await apiFetch('users'));
 			else if (activeTab === 'researchers') setResearchers(await apiFetch('researchers'));
+			else if (activeTab === 'articles') setArticles(await apiFetch('articles'));
+			else if (activeTab === 'certificates') setCertificates(await apiFetch('certificates'));
 			else if (activeTab === 'settings') setSettings(await apiFetch('settings'));
 		} catch (err) {
 			console.error(err);
 		}
 		setLoading(false);
+	};
+
+	const deleteArticle = async (id) => {
+		if(window.confirm('Delete article?')) {
+			try { await apiFetch(`articles/${id}`, { method: 'DELETE' }); loadData(); } catch(e) { alert('Error deleting article'); }
+		}
+	};
+
+	// Certificates CRUD
+	const handleCertificateSubmit = async (e) => {
+		e.preventDefault();
+		const formData = new FormData(e.target);
+		const data = Object.fromEntries(formData.entries());
+		try {
+			if (editingCertificate) {
+				await apiFetch(`certificates/${editingCertificate.id}`, { method: 'PUT', body: JSON.stringify(data) });
+			} else {
+				await apiFetch('certificates', { method: 'POST', body: JSON.stringify(data) });
+			}
+			setShowCertificateModal(false);
+			loadData();
+		} catch(err) { alert('Error saving certificate.'); }
+	};
+
+	const deleteCertificate = async (id) => {
+		if(window.confirm('Delete certificate?')) {
+			try { await apiFetch(`certificates/${id}`, { method: 'DELETE' }); loadData(); } catch(e) { alert('Error deleting certificate'); }
+		}
 	};
 
 	useEffect(() => {
@@ -142,6 +186,8 @@ const Dashboard = () => {
 					<button onClick={() => { setActiveTab('analytics'); closeSidebar(); }} className={`w-full text-left px-4 py-4 md:py-3 rounded-xl transition-colors ${activeTab === 'analytics' ? 'bg-black text-white' : 'text-gray-500 hover:bg-gray-50 hover:text-black'}`}>System Analytics</button>
 					<button onClick={() => { setActiveTab('users'); closeSidebar(); }} className={`w-full text-left px-4 py-4 md:py-3 rounded-xl transition-colors ${activeTab === 'users' ? 'bg-black text-white' : 'text-gray-500 hover:bg-gray-50 hover:text-black'}`}>System Users</button>
 					<button onClick={() => { setActiveTab('researchers'); closeSidebar(); }} className={`w-full text-left px-4 py-4 md:py-3 rounded-xl transition-colors ${activeTab === 'researchers' ? 'bg-black text-white' : 'text-gray-500 hover:bg-gray-50 hover:text-black'}`}>Researchers Mgmt</button>
+					<button onClick={() => { setActiveTab('articles'); closeSidebar(); }} className={`w-full text-left px-4 py-4 md:py-3 rounded-xl transition-colors ${activeTab === 'articles' ? 'bg-black text-white' : 'text-gray-500 hover:bg-gray-50 hover:text-black'}`}>Articles Mgmt</button>
+					<button onClick={() => { setActiveTab('certificates'); closeSidebar(); }} className={`w-full text-left px-4 py-4 md:py-3 rounded-xl transition-colors ${activeTab === 'certificates' ? 'bg-black text-white' : 'text-gray-500 hover:bg-gray-50 hover:text-black'}`}>Certificates</button>
 					<button onClick={() => { setActiveTab('settings'); closeSidebar(); }} className={`w-full text-left px-4 py-4 md:py-3 rounded-xl transition-colors ${activeTab === 'settings' ? 'bg-black text-white' : 'text-gray-500 hover:bg-gray-50 hover:text-black'}`}>Global Settings</button>
 				</nav>
 
@@ -181,7 +227,7 @@ const Dashboard = () => {
 									<svg className="w-4 h-4 text-gray-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
 								</div>
 							</div>
-							<button onClick={() => { setEditingUser(null); setShowUserModal(true); }} className="bg-black text-white px-4 py-2 rounded-full font-mono text-[10px] uppercase tracking-widest hover:bg-gray-800 transition-colors">Add User</button>
+							<button onClick={() => { setEditingUser(null); setIsRestrictedChecked(false); setShowUserModal(true); }} className="bg-black text-white px-4 py-2 rounded-full font-mono text-[10px] uppercase tracking-widest hover:bg-gray-800 transition-colors">Add User</button>
 						</header>
 						<div className="bg-white border border-[#E0E0E0] rounded-2xl shadow-sm overflow-x-auto">
 							<table className="w-full text-left border-collapse min-w-[600px]">
@@ -190,6 +236,7 @@ const Dashboard = () => {
 										<th className="py-4 px-6 font-normal">UID</th>
 										<th className="py-4 px-6 font-normal">Name</th>
 										<th className="py-4 px-6 font-normal">Email</th>
+										<th className="py-4 px-6 font-normal">Status</th>
 										<th className="py-4 px-6 font-normal">Roles</th>
 										<th className="py-4 px-6 font-normal">Registered</th>
 										<th className="py-4 px-6 font-normal text-right">Actions</th>
@@ -201,10 +248,17 @@ const Dashboard = () => {
 											<td className="py-4 px-6 font-mono text-xs text-gray-500">{u.id}</td>
 											<td className="py-4 px-6 font-bold whitespace-nowrap">{u.name}</td>
 											<td className="py-4 px-6 font-mono text-xs">{u.email}</td>
+											<td className="py-4 px-6">
+												{u.is_restricted ? <span className="bg-red-100 text-red-600 px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-widest">Restricted</span> : <span className="bg-green-100 text-green-600 px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-widest">Active</span>}
+											</td>
 											<td className="py-4 px-6 font-mono text-[10px] uppercase">{u.roles.join(', ')}</td>
 											<td className="py-4 px-6 font-mono text-xs">{new Date(u.registered).toLocaleDateString()}</td>
 											<td className="py-4 px-6 text-right space-x-2 whitespace-nowrap">
-												<button onClick={() => { setEditingUser(u); setShowUserModal(true); }} className="border border-[#E0E0E0] px-3 py-1 rounded font-mono text-[10px] uppercase hover:border-black transition-colors">Edit</button>
+												<button onClick={() => {
+													setEditingUser(u);
+													setIsRestrictedChecked(u.is_restricted);
+													setShowUserModal(true);
+												}} className="border border-[#E0E0E0] px-3 py-1 rounded font-mono text-[10px] uppercase hover:border-black transition-colors">Edit</button>
 												<button onClick={() => deleteUser(u.id)} className="border border-red-200 text-red-500 px-3 py-1 rounded font-mono text-[10px] uppercase hover:bg-red-50 transition-colors">Delete</button>
 											</td>
 										</tr>
@@ -233,6 +287,7 @@ const Dashboard = () => {
 									<tr className="bg-gray-50 border-b border-[#E0E0E0] font-mono text-[10px] uppercase tracking-widest text-gray-500">
 										<th className="py-4 px-6 font-normal">UID</th>
 										<th className="py-4 px-6 font-normal">Name</th>
+										<th className="py-4 px-6 font-normal">Verified</th>
 										<th className="py-4 px-6 font-normal">Specialty</th>
 										<th className="py-4 px-6 font-normal">Institution</th>
 										<th className="py-4 px-6 font-normal">Type</th>
@@ -244,6 +299,9 @@ const Dashboard = () => {
 										<tr key={r.id} className="hover:bg-gray-50 transition-colors">
 											<td className="py-4 px-6 font-mono text-xs text-gray-500">{r.id}</td>
 											<td className="py-4 px-6 font-bold whitespace-nowrap">{r.name}</td>
+											<td className="py-4 px-6">
+												{r.is_verified ? <span className="text-green-600"><svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"></path></svg></span> : <span className="text-gray-300">-</span>}
+											</td>
 											<td className="py-4 px-6 font-mono text-xs truncate max-w-[200px]">{r.specialty}</td>
 											<td className="py-4 px-6 font-mono text-xs truncate max-w-[200px]">{r.institution}</td>
 											<td className="py-4 px-6">
@@ -261,44 +319,224 @@ const Dashboard = () => {
 					</>
 				)}
 
+				{activeTab === 'articles' && (
+					<>
+						<header className="mb-6 md:mb-8 border-b border-[#E0E0E0] pb-6 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+							<div>
+								<h2 className="text-2xl md:text-3xl font-bold uppercase tracking-tight">Articles Management</h2>
+								<div className="mt-4 flex flex-wrap gap-4 items-center">
+									<div className="relative">
+										<input type="text" placeholder="Search articles..." value={articleSearch} onChange={e => setArticleSearch(e.target.value)} className="w-full md:w-64 border border-[#E0E0E0] rounded-lg pl-10 pr-4 py-2 text-sm font-sans outline-none focus:border-black" />
+										<svg className="w-4 h-4 text-gray-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+									</div>
+									<select value={articleStatusFilter} onChange={e => setArticleStatusFilter(e.target.value)} className="border border-[#E0E0E0] rounded-lg px-3 py-2 text-sm font-sans outline-none focus:border-black bg-white">
+										<option value="all">All Statuses</option>
+										<option value="publish">Published</option>
+										<option value="pending">Pending</option>
+										<option value="draft">Draft</option>
+									</select>
+									<select value={articleCategoryFilter} onChange={e => setArticleCategoryFilter(e.target.value)} className="border border-[#E0E0E0] rounded-lg px-3 py-2 text-sm font-sans outline-none focus:border-black bg-white">
+										<option value="all">All Categories</option>
+										{[...new Set(articles.flatMap(a => a.categories))].map(cat => (
+											<option key={cat} value={cat}>{cat}</option>
+										))}
+									</select>
+									<select value={articleSort} onChange={e => setArticleSort(e.target.value)} className="border border-[#E0E0E0] rounded-lg px-3 py-2 text-sm font-sans outline-none focus:border-black bg-white">
+										<option value="desc">Newest First</option>
+										<option value="asc">Oldest First</option>
+									</select>
+								</div>
+							</div>
+							{selectedArticles.length > 0 && (
+								<div className="flex gap-2">
+									<button onClick={async () => { await apiFetch('articles/bulk', { method: 'POST', body: JSON.stringify({action: 'publish', ids: selectedArticles}) }); setSelectedArticles([]); loadData(); }} className="bg-black text-white px-4 py-2 rounded-lg font-mono text-[10px] uppercase tracking-widest hover:bg-gray-800 transition-colors">Publish</button>
+									<button onClick={async () => { await apiFetch('articles/bulk', { method: 'POST', body: JSON.stringify({action: 'draft', ids: selectedArticles}) }); setSelectedArticles([]); loadData(); }} className="bg-yellow-100 text-yellow-800 px-4 py-2 rounded-lg font-mono text-[10px] uppercase tracking-widest hover:bg-yellow-200 transition-colors">Draft</button>
+									<button onClick={async () => { if(window.confirm('Delete selected?')) { await apiFetch('articles/bulk', { method: 'POST', body: JSON.stringify({action: 'delete', ids: selectedArticles}) }); setSelectedArticles([]); loadData(); } }} className="bg-red-100 text-red-800 px-4 py-2 rounded-lg font-mono text-[10px] uppercase tracking-widest hover:bg-red-200 transition-colors">Delete</button>
+								</div>
+							)}
+						</header>
+						<div className="bg-white border border-[#E0E0E0] rounded-2xl shadow-sm overflow-x-auto">
+							<table className="w-full text-left border-collapse min-w-[800px]">
+								<thead>
+									<tr className="bg-gray-50 border-b border-[#E0E0E0] font-mono text-[10px] uppercase tracking-widest text-gray-500">
+										<th className="py-4 px-6 font-normal w-10">
+											<input type="checkbox" onChange={e => setSelectedArticles(e.target.checked ? articles.map(a => a.id) : [])} checked={selectedArticles.length === articles.length && articles.length > 0} className="rounded border-gray-300 text-black focus:ring-black" />
+										</th>
+										<th className="py-4 px-6 font-normal">ID</th>
+										<th className="py-4 px-6 font-normal">Title</th>
+										<th className="py-4 px-6 font-normal">Author</th>
+										<th className="py-4 px-6 font-normal">Status</th>
+										<th className="py-4 px-6 font-normal">Date</th>
+										<th className="py-4 px-6 font-normal text-right">Actions</th>
+									</tr>
+								</thead>
+								<tbody className="font-sans text-sm divide-y divide-[#E0E0E0]">
+									{articles
+										.filter(a => articleStatusFilter === 'all' || a.status === articleStatusFilter)
+										.filter(a => articleCategoryFilter === 'all' || a.categories.includes(articleCategoryFilter))
+										.filter(a => a.title.toLowerCase().includes(articleSearch.toLowerCase()) || a.author_name.toLowerCase().includes(articleSearch.toLowerCase()))
+										.sort((a, b) => articleSort === 'desc' ? new Date(b.date) - new Date(a.date) : new Date(a.date) - new Date(b.date))
+										.map(a => (
+										<tr key={a.id} className="hover:bg-gray-50 transition-colors">
+											<td className="py-4 px-6">
+												<input type="checkbox" checked={selectedArticles.includes(a.id)} onChange={e => setSelectedArticles(e.target.checked ? [...selectedArticles, a.id] : selectedArticles.filter(id => id !== a.id))} className="rounded border-gray-300 text-black focus:ring-black" />
+											</td>
+											<td className="py-4 px-6 font-mono text-xs text-gray-500">{a.id}</td>
+											<td className="py-4 px-6 font-bold truncate max-w-[300px]">
+												<a href={a.permalink} target="_blank" rel="noreferrer" className="hover:underline">{a.title}</a>
+												<div className="font-mono text-[10px] text-gray-400 font-normal uppercase mt-1">{a.categories.join(', ')}</div>
+											</td>
+											<td className="py-4 px-6 text-xs">{a.author_name}</td>
+											<td className="py-4 px-6">
+												{a.status === 'publish' ? <span className="bg-green-100 text-green-600 px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-widest">Published</span> :
+												 a.status === 'pending' ? <span className="bg-yellow-100 text-yellow-600 px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-widest">Pending</span> :
+												 <span className="bg-gray-200 text-gray-600 px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-widest">{a.status}</span>}
+											</td>
+											<td className="py-4 px-6 font-mono text-xs text-gray-500">{new Date(a.date).toLocaleDateString()}</td>
+											<td className="py-4 px-6 text-right space-x-2 whitespace-nowrap">
+												{a.status === 'pending' && <button onClick={async () => { await apiFetch(`articles/${a.id}/status`, { method: 'PUT', body: JSON.stringify({status: 'publish'}) }); loadData(); }} className="border border-green-200 text-green-600 px-3 py-1 rounded font-mono text-[10px] uppercase hover:bg-green-50 transition-colors">Approve</button>}
+												{a.status === 'publish' && <button onClick={async () => { await apiFetch(`articles/${a.id}/status`, { method: 'PUT', body: JSON.stringify({status: 'draft'}) }); loadData(); }} className="border border-yellow-200 text-yellow-600 px-3 py-1 rounded font-mono text-[10px] uppercase hover:bg-yellow-50 transition-colors">Unpublish</button>}
+												<button onClick={() => deleteArticle(a.id)} className="border border-red-200 text-red-500 px-3 py-1 rounded font-mono text-[10px] uppercase hover:bg-red-50 transition-colors">Del</button>
+											</td>
+										</tr>
+									))}
+								</tbody>
+							</table>
+						</div>
+					</>
+				)}
+
+				{activeTab === 'certificates' && (
+					<>
+						<header className="mb-6 md:mb-8 border-b border-[#E0E0E0] pb-6 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+							<div>
+								<h2 className="text-2xl md:text-3xl font-bold uppercase tracking-tight">Certificates & Documents</h2>
+								<div className="mt-4 relative">
+									<input type="text" placeholder="Search certificates..." value={certificateSearch} onChange={e => setCertificateSearch(e.target.value)} className="w-full md:w-80 border border-[#E0E0E0] rounded-lg pl-10 pr-4 py-2 text-sm font-sans outline-none focus:border-black" />
+									<svg className="w-4 h-4 text-gray-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+								</div>
+							</div>
+							<button onClick={() => { setEditingCertificate(null); setShowCertificateModal(true); }} className="bg-black text-white px-4 py-2 rounded-full font-mono text-[10px] uppercase tracking-widest hover:bg-gray-800 transition-colors">Add Certificate</button>
+						</header>
+						<div className="bg-white border border-[#E0E0E0] rounded-2xl shadow-sm overflow-x-auto">
+							<table className="w-full text-left border-collapse min-w-[800px]">
+								<thead>
+									<tr className="bg-gray-50 border-b border-[#E0E0E0] font-mono text-[10px] uppercase tracking-widest text-gray-500">
+										<th className="py-4 px-6 font-normal">ID</th>
+										<th className="py-4 px-6 font-normal">Title</th>
+										<th className="py-4 px-6 font-normal">Cert Number</th>
+										<th className="py-4 px-6 font-normal">Holder Name</th>
+										<th className="py-4 px-6 font-normal">Issue Date</th>
+										<th className="py-4 px-6 font-normal">Status</th>
+										<th className="py-4 px-6 font-normal text-right">Actions</th>
+									</tr>
+								</thead>
+								<tbody className="font-sans text-sm divide-y divide-[#E0E0E0]">
+									{certificates.filter(c => c.title.toLowerCase().includes(certificateSearch.toLowerCase()) || (c.cert_number && c.cert_number.toLowerCase().includes(certificateSearch.toLowerCase()))).map(c => (
+										<tr key={c.id} className="hover:bg-gray-50 transition-colors">
+											<td className="py-4 px-6 font-mono text-xs text-gray-500">{c.id}</td>
+											<td className="py-4 px-6 font-bold truncate max-w-[200px]">{c.title}</td>
+											<td className="py-4 px-6 font-mono text-xs text-gray-500">{c.cert_number}</td>
+											<td className="py-4 px-6 font-mono text-xs truncate max-w-[200px]">{c.holder_name}</td>
+											<td className="py-4 px-6 font-mono text-xs">{c.issue_date}</td>
+											<td className="py-4 px-6">
+												{c.status === 'publish' ? <span className="bg-green-100 text-green-600 px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-widest">Active</span> : <span className="bg-gray-200 text-gray-600 px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-widest">Inactive</span>}
+											</td>
+											<td className="py-4 px-6 text-right space-x-2 whitespace-nowrap">
+												<button onClick={() => { setEditingCertificate(c); setShowCertificateModal(true); }} className="border border-[#E0E0E0] px-3 py-1 rounded font-mono text-[10px] uppercase hover:border-black transition-colors">Edit</button>
+												<button onClick={() => deleteCertificate(c.id)} className="border border-red-200 text-red-500 px-3 py-1 rounded font-mono text-[10px] uppercase hover:bg-red-50 transition-colors">Del</button>
+											</td>
+										</tr>
+									))}
+								</tbody>
+							</table>
+						</div>
+					</>
+				)}
+
 				{activeTab === 'settings' && (
 					<>
 						<header className="mb-6 md:mb-8 border-b border-[#E0E0E0] pb-6">
-							<h2 className="text-2xl md:text-3xl font-bold uppercase tracking-tight">Global System Settings</h2>
+							<h2 className="text-2xl md:text-3xl font-bold uppercase tracking-tight mb-4">Global System Settings</h2>
+							<div className="flex space-x-4 font-mono text-xs uppercase tracking-widest border-b border-[#E0E0E0] pb-0">
+								<button
+									className={`pb-3 border-b-2 transition-colors ${settingsTab === 'general' ? 'border-black text-black' : 'border-transparent text-gray-500 hover:text-black'}`}
+									onClick={() => setSettingsTab('general')}
+								>General</button>
+								<button
+									className={`pb-3 border-b-2 transition-colors ${settingsTab === 'authentication' ? 'border-black text-black' : 'border-transparent text-gray-500 hover:text-black'}`}
+									onClick={() => setSettingsTab('authentication')}
+								>Authentication</button>
+								<button
+									className={`pb-3 border-b-2 transition-colors ${settingsTab === 'data' ? 'border-black text-black' : 'border-transparent text-gray-500 hover:text-black'}`}
+									onClick={() => setSettingsTab('data')}
+								>Data Management</button>
+							</div>
 						</header>
-						<form onSubmit={saveSettings} className="space-y-6 max-w-2xl bg-white border border-[#E0E0E0] rounded-2xl p-8">
-							<div>
-								<label className="block font-mono text-[10px] uppercase tracking-widest text-gray-500 mb-2">Site Name</label>
-								<input type="text" value={settings.site_name} onChange={e => setSettings({...settings, site_name: e.target.value})} className="w-full border border-[#E0E0E0] rounded-xl px-4 py-2 font-sans outline-none focus:border-black" />
-							</div>
-							<div>
-								<label className="block font-mono text-[10px] uppercase tracking-widest text-gray-500 mb-2">Global Description</label>
-								<textarea value={settings.site_desc} onChange={e => setSettings({...settings, site_desc: e.target.value})} className="w-full border border-[#E0E0E0] rounded-xl px-4 py-2 font-sans outline-none focus:border-black" rows="3"></textarea>
-							</div>
-							<div>
-								<label className="block font-mono text-[10px] uppercase tracking-widest text-gray-500 mb-2">Admin Contact Email</label>
-								<input type="email" value={settings.admin_email} onChange={e => setSettings({...settings, admin_email: e.target.value})} className="w-full border border-[#E0E0E0] rounded-xl px-4 py-2 font-sans outline-none focus:border-black" />
-							</div>
 
-							<div className="pt-4 border-t border-[#E0E0E0]">
-								<h3 className="text-lg font-bold uppercase tracking-tight mb-4">Authentication Configuration</h3>
-								<div className="space-y-4">
-									<label className="flex items-center gap-3">
-										<input type="checkbox" checked={settings.enable_registration === 'yes'} onChange={e => setSettings({...settings, enable_registration: e.target.checked ? 'yes' : 'no'})} className="w-4 h-4 text-black focus:ring-black border-gray-300 rounded" />
-										<span className="font-mono text-sm text-gray-700">Enable New User Registration</span>
-									</label>
-									<label className="flex items-center gap-3">
-										<input type="checkbox" checked={settings.auth_maintenance_mode === 'yes'} onChange={e => setSettings({...settings, auth_maintenance_mode: e.target.checked ? 'yes' : 'no'})} className="w-4 h-4 text-black focus:ring-black border-gray-300 rounded" />
-										<span className="font-mono text-sm text-gray-700">Enable Auth Maintenance Mode (Disables Login & Registration)</span>
-									</label>
+						<form onSubmit={saveSettings} className="max-w-2xl bg-white border border-[#E0E0E0] rounded-2xl p-8">
+							{settingsTab === 'general' && (
+								<div className="space-y-6">
+									<div>
+										<label className="block font-mono text-[10px] uppercase tracking-widest text-gray-500 mb-2">Site Name</label>
+										<input type="text" value={settings.site_name} onChange={e => setSettings({...settings, site_name: e.target.value})} className="w-full border border-[#E0E0E0] rounded-xl px-4 py-2 font-sans outline-none focus:border-black" />
+									</div>
+									<div>
+										<label className="block font-mono text-[10px] uppercase tracking-widest text-gray-500 mb-2">Global Description</label>
+										<textarea value={settings.site_desc} onChange={e => setSettings({...settings, site_desc: e.target.value})} className="w-full border border-[#E0E0E0] rounded-xl px-4 py-2 font-sans outline-none focus:border-black" rows="3"></textarea>
+									</div>
+									<div>
+										<label className="block font-mono text-[10px] uppercase tracking-widest text-gray-500 mb-2">Admin Contact Email</label>
+										<input type="email" value={settings.admin_email} onChange={e => setSettings({...settings, admin_email: e.target.value})} className="w-full border border-[#E0E0E0] rounded-xl px-4 py-2 font-sans outline-none focus:border-black" />
+									</div>
+									<div className="pt-4 border-t border-[#E0E0E0]">
+										<h3 className="text-lg font-bold uppercase tracking-tight mb-4">Footer Legal Pages</h3>
+										<div className="space-y-4">
+											<div>
+												<label className="block font-mono text-[10px] uppercase tracking-widest text-gray-500 mb-2">Privacy Policy URL</label>
+												<input type="url" value={settings.privacy_policy_url} onChange={e => setSettings({...settings, privacy_policy_url: e.target.value})} placeholder="e.g. https://healthedia.org/privacy" className="w-full border border-[#E0E0E0] rounded-xl px-4 py-2 font-sans outline-none focus:border-black" />
+											</div>
+											<div>
+												<label className="block font-mono text-[10px] uppercase tracking-widest text-gray-500 mb-2">Terms of Service URL</label>
+												<input type="url" value={settings.terms_url} onChange={e => setSettings({...settings, terms_url: e.target.value})} placeholder="e.g. https://healthedia.org/terms" className="w-full border border-[#E0E0E0] rounded-xl px-4 py-2 font-sans outline-none focus:border-black" />
+											</div>
+										</div>
+									</div>
 								</div>
-							</div>
+							)}
 
-							<div className="pt-4 flex justify-between items-center border-t border-[#E0E0E0]">
+							{settingsTab === 'authentication' && (
+								<div className="space-y-6">
+									<h3 className="text-lg font-bold uppercase tracking-tight mb-4">Authentication Configuration</h3>
+									<div className="space-y-4">
+										<label className="flex items-center gap-3">
+											<input type="checkbox" checked={settings.enable_registration === 'yes'} onChange={e => setSettings({...settings, enable_registration: e.target.checked ? 'yes' : 'no'})} className="w-4 h-4 text-black focus:ring-black border-gray-300 rounded" />
+											<span className="font-mono text-sm text-gray-700">Enable New User Registration</span>
+										</label>
+										<label className="flex items-center gap-3">
+											<input type="checkbox" checked={settings.auth_maintenance_mode === 'yes'} onChange={e => setSettings({...settings, auth_maintenance_mode: e.target.checked ? 'yes' : 'no'})} className="w-4 h-4 text-black focus:ring-black border-gray-300 rounded" />
+											<span className="font-mono text-sm text-gray-700">Enable Auth Maintenance Mode (Disables Login & Registration)</span>
+										</label>
+									</div>
+								</div>
+							)}
+
+							{settingsTab === 'data' && (
+								<div className="space-y-6">
+									<h3 className="text-lg font-bold uppercase tracking-tight mb-4">Data Management</h3>
+									<div className="space-y-4">
+										<p className="font-sans text-sm text-gray-600 mb-4">Manage mock data seeded during installation. This action cannot be undone.</p>
+										{settings.mock_data_seeded ? (
+											<button type="button" onClick={wipeMockData} className="border border-red-500 text-red-500 px-6 py-2 rounded-full font-sans uppercase text-sm tracking-wide hover:bg-red-50 transition-colors">Wipe Mock Data</button>
+										) : (
+											<p className="font-mono text-xs text-green-600 uppercase tracking-widest">Mock Data is currently clean.</p>
+										)}
+									</div>
+								</div>
+							)}
+
+							<div className="pt-8 mt-8 flex justify-between items-center border-t border-[#E0E0E0]">
 								<button type="submit" className="bg-black text-white px-6 py-2 rounded-full font-sans uppercase text-sm tracking-wide hover:bg-gray-800 transition-colors">Save Settings</button>
-								{settings.mock_data_seeded && (
-									<button type="button" onClick={wipeMockData} className="border border-red-500 text-red-500 px-6 py-2 rounded-full font-sans uppercase text-sm tracking-wide hover:bg-red-50 transition-colors">Wipe Mock Data</button>
-								)}
 							</div>
 						</form>
 					</>
@@ -326,6 +564,32 @@ const Dashboard = () => {
 									<option value="administrator">Administrator</option>
 								</select>
 							</div>
+
+							{editingUser && (
+								<div className="pt-4 border-t border-[#E0E0E0]">
+									<label className="flex items-center gap-3 mb-4">
+										<input type="checkbox" name="is_restricted" value="1" checked={isRestrictedChecked} onChange={(e) => setIsRestrictedChecked(e.target.checked)} className="w-4 h-4 text-black focus:ring-black border-gray-300 rounded" />
+										<span className="font-sans text-sm font-bold text-red-600">Restrict Account Temporarily</span>
+									</label>
+
+									{isRestrictedChecked && (
+										<div className="space-y-3 bg-red-50 p-4 rounded-lg border border-red-100">
+											<div>
+												<label className="block font-mono text-[10px] uppercase tracking-widest text-gray-500 mb-1">Restriction Duration (Days)</label>
+												<input type="number" name="restricted_duration" min="1" defaultValue="7" required={isRestrictedChecked} className="w-full border border-[#E0E0E0] rounded-lg px-3 py-2 text-sm outline-none focus:border-black" />
+											</div>
+											<div>
+												<label className="block font-mono text-[10px] uppercase tracking-widest text-gray-500 mb-1">Restriction Reason</label>
+												<input type="text" name="restricted_reason" defaultValue={editingUser.restricted_reason || ''} required={isRestrictedChecked} placeholder="e.g. Violation of terms" className="w-full border border-[#E0E0E0] rounded-lg px-3 py-2 text-sm outline-none focus:border-black" />
+											</div>
+											<div>
+												<label className="block font-mono text-[10px] uppercase tracking-widest text-gray-500 mb-1">Administrator Notes (Internal)</label>
+												<textarea name="restricted_notes" defaultValue={editingUser.restricted_notes || ''} rows="2" className="w-full border border-[#E0E0E0] rounded-lg px-3 py-2 text-sm outline-none focus:border-black"></textarea>
+											</div>
+										</div>
+									)}
+								</div>
+							)}
 						</div>
 						<div className="flex justify-end gap-3">
 							<button type="button" onClick={() => setShowUserModal(false)} className="px-4 py-2 rounded-full font-mono text-xs uppercase tracking-widest text-gray-500 hover:bg-gray-100">Cancel</button>
@@ -340,14 +604,24 @@ const Dashboard = () => {
 					<form onSubmit={handleResearcherSubmit} className="bg-white rounded-2xl p-6 md:p-8 w-full max-w-md">
 						<h3 className="text-xl font-bold uppercase tracking-tight mb-6">{editingResearcher ? 'Edit Researcher' : 'Add Researcher'}</h3>
 						<div className="space-y-4 mb-6">
-							<div>
-								<label className="block font-mono text-[10px] uppercase tracking-widest text-gray-500 mb-1">Name</label>
-								<input type="text" name="name" defaultValue={editingResearcher?.name || ''} required className="w-full border border-[#E0E0E0] rounded-lg px-3 py-2 text-sm outline-none focus:border-black" />
-							</div>
-							<div>
-								<label className="block font-mono text-[10px] uppercase tracking-widest text-gray-500 mb-1">Email</label>
-								<input type="email" name="email" defaultValue={editingResearcher?.email || ''} required className="w-full border border-[#E0E0E0] rounded-lg px-3 py-2 text-sm outline-none focus:border-black" />
-							</div>
+							{!editingResearcher && (
+								<div>
+									<label className="block font-mono text-[10px] uppercase tracking-widest text-gray-500 mb-1">Select User</label>
+									<select name="user_id" required className="w-full border border-[#E0E0E0] rounded-lg px-3 py-2 text-sm outline-none focus:border-black bg-white">
+										<option value="">-- Select a User --</option>
+										{users.filter(u => !researchers.some(r => r.id === u.id)).map(u => (
+											<option key={u.id} value={u.id}>{u.name} ({u.email})</option>
+										))}
+									</select>
+								</div>
+							)}
+							{editingResearcher && (
+								<div className="bg-gray-50 p-3 rounded-lg border border-[#E0E0E0] mb-4">
+									<div className="font-mono text-[10px] uppercase tracking-widest text-gray-500">Linked User Account</div>
+									<div className="font-bold">{editingResearcher.name}</div>
+									<div className="text-sm text-gray-500">{editingResearcher.email}</div>
+								</div>
+							)}
 							<div>
 								<label className="block font-mono text-[10px] uppercase tracking-widest text-gray-500 mb-1">Specialty</label>
 								<input type="text" name="specialty" defaultValue={editingResearcher?.specialty || ''} required className="w-full border border-[#E0E0E0] rounded-lg px-3 py-2 text-sm outline-none focus:border-black" />
@@ -356,9 +630,50 @@ const Dashboard = () => {
 								<label className="block font-mono text-[10px] uppercase tracking-widest text-gray-500 mb-1">Institution</label>
 								<input type="text" name="institution" defaultValue={editingResearcher?.institution || ''} required className="w-full border border-[#E0E0E0] rounded-lg px-3 py-2 text-sm outline-none focus:border-black" />
 							</div>
+							<label className="flex items-center gap-3 pt-2">
+								<input type="checkbox" name="is_verified" value="1" defaultChecked={editingResearcher?.is_verified} className="w-4 h-4 text-black focus:ring-black border-gray-300 rounded" />
+								<span className="font-sans text-sm font-bold flex items-center gap-1 text-gray-700">Verified Badge <svg className="w-4 h-4 text-black" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"></path></svg></span>
+							</label>
 						</div>
 						<div className="flex justify-end gap-3">
 							<button type="button" onClick={() => setShowResearcherModal(false)} className="px-4 py-2 rounded-full font-mono text-xs uppercase tracking-widest text-gray-500 hover:bg-gray-100">Cancel</button>
+							<button type="submit" className="bg-black text-white px-6 py-2 rounded-full font-mono text-xs uppercase tracking-widest hover:bg-gray-800">Save</button>
+						</div>
+					</form>
+				</div>
+			)}
+
+			{showCertificateModal && (
+				<div className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4">
+					<form onSubmit={handleCertificateSubmit} className="bg-white rounded-2xl p-6 md:p-8 w-full max-w-md">
+						<h3 className="text-xl font-bold uppercase tracking-tight mb-6">{editingCertificate ? 'Edit Certificate' : 'Add Certificate'}</h3>
+						<div className="space-y-4 mb-6">
+							<div>
+								<label className="block font-mono text-[10px] uppercase tracking-widest text-gray-500 mb-1">Document Title</label>
+								<input type="text" name="title" defaultValue={editingCertificate?.title || ''} required className="w-full border border-[#E0E0E0] rounded-lg px-3 py-2 text-sm outline-none focus:border-black" />
+							</div>
+							<div>
+								<label className="block font-mono text-[10px] uppercase tracking-widest text-gray-500 mb-1">Certificate / Verification Number</label>
+								<input type="text" name="cert_number" defaultValue={editingCertificate?.cert_number || ''} required className="w-full border border-[#E0E0E0] rounded-lg px-3 py-2 text-sm outline-none focus:border-black" />
+							</div>
+							<div>
+								<label className="block font-mono text-[10px] uppercase tracking-widest text-gray-500 mb-1">Holder Name</label>
+								<input type="text" name="holder_name" defaultValue={editingCertificate?.holder_name || ''} required className="w-full border border-[#E0E0E0] rounded-lg px-3 py-2 text-sm outline-none focus:border-black" />
+							</div>
+							<div>
+								<label className="block font-mono text-[10px] uppercase tracking-widest text-gray-500 mb-1">Issue Date</label>
+								<input type="date" name="issue_date" defaultValue={editingCertificate?.issue_date || ''} required className="w-full border border-[#E0E0E0] rounded-lg px-3 py-2 text-sm outline-none focus:border-black" />
+							</div>
+							<div>
+								<label className="block font-mono text-[10px] uppercase tracking-widest text-gray-500 mb-1">Status</label>
+								<select name="status" defaultValue={editingCertificate?.status || 'publish'} className="w-full border border-[#E0E0E0] rounded-lg px-3 py-2 text-sm outline-none focus:border-black bg-white">
+									<option value="publish">Active</option>
+									<option value="draft">Inactive</option>
+								</select>
+							</div>
+						</div>
+						<div className="flex justify-end gap-3">
+							<button type="button" onClick={() => setShowCertificateModal(false)} className="px-4 py-2 rounded-full font-mono text-xs uppercase tracking-widest text-gray-500 hover:bg-gray-100">Cancel</button>
 							<button type="submit" className="bg-black text-white px-6 py-2 rounded-full font-mono text-xs uppercase tracking-widest hover:bg-gray-800">Save</button>
 						</div>
 					</form>

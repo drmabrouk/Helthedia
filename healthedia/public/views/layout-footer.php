@@ -20,8 +20,8 @@
 			<div>
 				<h4 class="font-sans font-bold uppercase tracking-wider text-sm mb-4">Legal</h4>
 				<ul class="font-mono text-xs text-gray-500 space-y-2 uppercase">
-					<li><a href="#" class="hover:text-black transition-colors">Privacy Policy</a></li>
-					<li><a href="#" class="hover:text-black transition-colors">Terms of Service</a></li>
+					<li><a href="<?php echo esc_url(get_option('healthedia_privacy_policy_url', '#')); ?>" class="hover:text-black transition-colors">Privacy Policy</a></li>
+					<li><a href="<?php echo esc_url(get_option('healthedia_terms_url', '#')); ?>" class="hover:text-black transition-colors">Terms of Service</a></li>
 					<li><a href="#" class="hover:text-black transition-colors">Data Integrity</a></li>
 				</ul>
 			</div>

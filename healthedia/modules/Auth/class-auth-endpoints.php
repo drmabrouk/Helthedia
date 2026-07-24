@@ -47,8 +47,23 @@ class Healthedia_Auth_Endpoints {
 			);
 			set_transient('healthedia_reg_' . md5($email), $temp_data, 15 * MINUTE_IN_SECONDS);
 		} else {
-			if (!email_exists($email)) {
+			$user = get_user_by('email', $email);
+			if (!$user) {
 				return new WP_Error('email_not_found', 'No account found with this email.', array('status' => 400));
+			}
+
+			$restricted_until = get_user_meta($user->ID, '_healthedia_restricted_until', true);
+			if ($restricted_until && intval($restricted_until) > time()) {
+				$reason = get_user_meta($user->ID, '_healthedia_restricted_reason', true);
+				$message = 'Your account has been temporarily restricted until ' . date('Y-m-d H:i', $restricted_until) . '.';
+				if ($reason) {
+					$message .= ' Reason: ' . esc_html($reason);
+				}
+				return new WP_Error('account_restricted', $message, array('status' => 403));
+			} elseif ($restricted_until) {
+				delete_user_meta($user->ID, '_healthedia_restricted_until');
+				delete_user_meta($user->ID, '_healthedia_restricted_reason');
+				delete_user_meta($user->ID, '_healthedia_restricted_notes');
 			}
 		}
 
@@ -108,6 +123,19 @@ class Healthedia_Auth_Endpoints {
 		} else {
 			if (!$user) {
 				return new WP_Error('user_not_found', 'User not found.', array('status' => 400));
+			}
+			$restricted_until = get_user_meta($user->ID, '_healthedia_restricted_until', true);
+			if ($restricted_until && intval($restricted_until) > time()) {
+				$reason = get_user_meta($user->ID, '_healthedia_restricted_reason', true);
+				$message = 'Your account has been temporarily restricted until ' . date('Y-m-d H:i', $restricted_until) . '.';
+				if ($reason) {
+					$message .= ' Reason: ' . esc_html($reason);
+				}
+				return new WP_Error('account_restricted', $message, array('status' => 403));
+			} elseif ($restricted_until) {
+				delete_user_meta($user->ID, '_healthedia_restricted_until');
+				delete_user_meta($user->ID, '_healthedia_restricted_reason');
+				delete_user_meta($user->ID, '_healthedia_restricted_notes');
 			}
 		}
 
