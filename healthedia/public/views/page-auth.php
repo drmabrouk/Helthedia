@@ -44,11 +44,19 @@ if ($maintenance_mode === 'yes') {
 			</div>
 
 			<form id="auth-form-login" class="space-y-6">
-				<input type="hidden" name="is_register" value="false">
 				<div>
-					<input type="email" name="email" id="login-email" required placeholder="Institutional Email Address" class="w-full border border-[#E0E0E0] rounded-xl px-4 py-3 font-sans text-sm outline-none focus:border-black transition-colors bg-white">
+					<input type="text" name="login" id="login-input" required placeholder="Email Address or Username" class="w-full border border-[#E0E0E0] rounded-xl px-4 py-3 font-sans text-sm outline-none focus:border-black transition-colors bg-white">
 				</div>
-				<div class="text-right">
+				<div class="relative">
+					<input type="password" name="password" id="login-password" required maxlength="100" placeholder="Password" class="w-full border border-[#E0E0E0] rounded-xl px-4 py-3 font-sans text-sm outline-none focus:border-black transition-colors bg-white pr-10">
+					<button type="button" class="toggle-password absolute right-3 top-3 text-gray-400 hover:text-black" data-target="login-password">
+						<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+					</button>
+				</div>
+				<div class="flex justify-end">
+					<button type="button" id="btn-forgot-password" class="font-mono text-[10px] text-gray-500 hover:text-black uppercase tracking-widest transition-colors">Forgot Password?</button>
+				</div>
+				<div>
 					<button type="submit" id="btn-login-submit" class="w-full bg-black text-white px-6 py-4 rounded-xl font-mono uppercase text-[10px] font-bold tracking-widest hover:bg-gray-800 transition-colors flex justify-center items-center gap-2">
 						<span>Sign In To Archive</span>
 					</button>
@@ -65,8 +73,6 @@ if ($maintenance_mode === 'yes') {
 			</div>
 
 			<form id="auth-form-register" class="space-y-4">
-				<input type="hidden" name="is_register" value="true">
-
 				<div class="flex gap-2">
 					<select name="title" class="w-24 border border-[#E0E0E0] rounded-xl px-2 py-3 font-sans text-sm outline-none focus:border-black transition-colors bg-white">
 						<option value="Dr.">Dr.</option>
@@ -79,6 +85,13 @@ if ($maintenance_mode === 'yes') {
 
 				<div>
 					<input type="email" name="email" id="register-email" required placeholder="Institutional Email Address" class="w-full border border-[#E0E0E0] rounded-xl px-4 py-3 font-sans text-sm outline-none focus:border-black transition-colors bg-white">
+				</div>
+
+				<div class="relative">
+					<input type="password" name="password" id="register-password" required maxlength="100" placeholder="Secure Password" class="w-full border border-[#E0E0E0] rounded-xl px-4 py-3 font-sans text-sm outline-none focus:border-black transition-colors bg-white pr-10">
+					<button type="button" class="toggle-password absolute right-3 top-3 text-gray-400 hover:text-black" data-target="register-password">
+						<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+					</button>
 				</div>
 
 				<div>
@@ -109,6 +122,60 @@ if ($maintenance_mode === 'yes') {
 			</form>
 		</div>
 		<?php endif; ?>
+
+		<!-- Forgot Password Initial Request Container -->
+		<div id="auth-forgot-container" class="hidden">
+			<div class="text-center mb-8">
+				<h2 class="text-2xl font-sans font-bold uppercase tracking-tight mb-2">Account Recovery</h2>
+				<p class="font-mono text-[10px] text-gray-500 uppercase tracking-widest leading-relaxed">Enter your email address to receive a secure OTP verification code.</p>
+			</div>
+
+			<form id="auth-form-forgot" class="space-y-6">
+				<input type="hidden" name="is_forgot" value="true">
+				<div>
+					<input type="email" name="email" id="forgot-email" required placeholder="Institutional Email Address" class="w-full border border-[#E0E0E0] rounded-xl px-4 py-3 font-sans text-sm outline-none focus:border-black transition-colors bg-white">
+				</div>
+				<div>
+					<button type="submit" id="btn-forgot-submit" class="w-full bg-black text-white px-6 py-4 rounded-xl font-mono uppercase text-[10px] font-bold tracking-widest hover:bg-gray-800 transition-colors flex justify-center items-center gap-2">
+						<span>Request OTP</span>
+					</button>
+				</div>
+				<div class="text-center">
+					<button type="button" id="btn-back-to-login" class="font-mono text-[10px] text-gray-500 hover:text-black uppercase tracking-widest transition-colors">← Back to Login</button>
+				</div>
+			</form>
+		</div>
+
+		<!-- Password Reset Container -->
+		<div id="auth-reset-container" class="hidden">
+			<div class="text-center mb-8">
+				<h2 class="text-2xl font-sans font-bold uppercase tracking-tight mb-2">Secure Reset</h2>
+				<p class="font-mono text-[10px] text-gray-500 uppercase tracking-widest leading-relaxed">Identity verified. Please enter a new password below.</p>
+			</div>
+
+			<form id="auth-form-reset" class="space-y-6">
+				<input type="hidden" name="email" id="reset-email" value="">
+				<input type="hidden" name="otp" id="reset-otp" value="">
+
+				<div class="relative">
+					<input type="password" name="password" id="reset-password" required maxlength="100" placeholder="New Password" class="w-full border border-[#E0E0E0] rounded-xl px-4 py-3 font-sans text-sm outline-none focus:border-black transition-colors bg-white pr-10">
+					<button type="button" class="toggle-password absolute right-3 top-3 text-gray-400 hover:text-black" data-target="reset-password">
+						<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+					</button>
+				</div>
+				<div class="relative">
+					<input type="password" name="password_confirm" id="reset-password-confirm" required maxlength="100" placeholder="Confirm New Password" class="w-full border border-[#E0E0E0] rounded-xl px-4 py-3 font-sans text-sm outline-none focus:border-black transition-colors bg-white pr-10">
+					<button type="button" class="toggle-password absolute right-3 top-3 text-gray-400 hover:text-black" data-target="reset-password-confirm">
+						<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+					</button>
+				</div>
+				<div>
+					<button type="submit" id="btn-reset-submit" class="w-full bg-black text-white px-6 py-4 rounded-xl font-mono uppercase text-[10px] font-bold tracking-widest hover:bg-gray-800 transition-colors flex justify-center items-center gap-2">
+						<span>Reset & Login</span>
+					</button>
+				</div>
+			</form>
+		</div>
 
 		<!-- OTP Verification Overlay Container -->
 		<div id="auth-otp-container" class="absolute inset-0 bg-white z-20 flex flex-col items-center justify-center p-8 hidden transform transition-transform duration-300 translate-y-full">

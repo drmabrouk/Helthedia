@@ -61,6 +61,38 @@ $public_url = $username ? home_url('/u/' . $username) : home_url('/profile/' . $
 				</div>
 			</div>
 
+			<!-- Security & Account Credentials -->
+			<div class="bg-white border border-[#E0E0E0] rounded-2xl p-8">
+				<h2 class="font-sans font-bold uppercase tracking-wider text-sm mb-6">Security & Account Credentials</h2>
+
+				<div class="space-y-6">
+					<div>
+						<label class="block font-mono text-[10px] uppercase tracking-widest text-gray-500 mb-2">Email Address</label>
+						<input type="email" name="user_email" value="<?php echo esc_attr($user->user_email); ?>" required class="w-full border border-[#E0E0E0] rounded-xl px-4 py-2.5 font-sans outline-none focus:border-black bg-white" title="Changing your email will require OTP verification on next login.">
+						<p class="font-mono text-[10px] text-gray-400 mt-1 uppercase tracking-widest">Changing this will update your primary login credential.</p>
+					</div>
+
+					<div class="border-t border-[#E0E0E0] pt-6">
+						<h3 class="font-sans font-bold uppercase tracking-wider text-xs mb-4">Change Password</h3>
+						<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+							<div class="relative">
+								<input type="password" name="new_password" id="setting-new-password" placeholder="New Password" class="w-full border border-[#E0E0E0] rounded-xl px-4 py-2.5 font-sans outline-none focus:border-black bg-white pr-10">
+								<button type="button" class="toggle-password absolute right-3 top-3 text-gray-400 hover:text-black" data-target="setting-new-password">
+									<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+								</button>
+							</div>
+							<div class="relative">
+								<input type="password" name="confirm_password" id="setting-confirm-password" placeholder="Confirm New Password" class="w-full border border-[#E0E0E0] rounded-xl px-4 py-2.5 font-sans outline-none focus:border-black bg-white pr-10">
+								<button type="button" class="toggle-password absolute right-3 top-3 text-gray-400 hover:text-black" data-target="setting-confirm-password">
+									<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+								</button>
+							</div>
+						</div>
+						<p class="font-mono text-[10px] text-gray-400 mt-2 uppercase tracking-widest">Leave blank to keep your current password.</p>
+					</div>
+				</div>
+			</div>
+
 			<!-- Public URL -->
 			<div class="bg-white border border-[#E0E0E0] rounded-2xl p-8">
 				<h2 class="font-sans font-bold uppercase tracking-wider text-sm mb-6">Custom Profile URL</h2>
@@ -69,6 +101,7 @@ $public_url = $username ? home_url('/u/' . $username) : home_url('/profile/' . $
 					<span class="flex items-center px-4 bg-gray-100 border border-r-0 border-[#E0E0E0] rounded-l-xl font-mono text-sm text-gray-500">healthedia.org/u/</span>
 					<input type="text" name="_healthedia_username" value="<?php echo esc_attr($username ?: $user->user_login); ?>" class="flex-grow border border-[#E0E0E0] rounded-r-xl px-4 py-2.5 font-sans outline-none focus:border-black bg-white" pattern="[a-zA-Z0-9_-]+" title="Only letters, numbers, underscores, and hyphens are allowed.">
 				</div>
+				<p class="font-mono text-[10px] text-gray-400 mt-2 uppercase tracking-widest">Usernames can only be changed once every 7 days to maintain index integrity.</p>
 				<p class="font-mono text-xs text-gray-500 mt-3">
 					Current Public URL: <a href="<?php echo esc_url($public_url); ?>" class="text-black font-bold hover:underline" target="_blank"><?php echo esc_url($public_url); ?></a>
 				</p>

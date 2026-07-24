@@ -75,6 +75,24 @@ class Healthedia_Profile_Endpoints {
 
 		$user_data = array('ID' => $user_id);
 
+		if (!empty($params['new_password'])) {
+			if ($params['new_password'] !== $params['confirm_password']) {
+				return new WP_Error('password_mismatch', 'New passwords do not match.', array('status' => 400));
+			}
+			$user_data['user_pass'] = $params['new_password'];
+		}
+
+		if (!empty($params['user_email'])) {
+			$new_email = sanitize_email($params['user_email']);
+			$current_user = get_userdata($user_id);
+			if ($new_email !== $current_user->user_email) {
+				if (email_exists($new_email)) {
+					return new WP_Error('email_exists', 'Email address already in use.', array('status' => 400));
+				}
+				$user_data['user_email'] = $new_email;
+			}
+		}
+
 		if (isset($params['first_name'])) {
 			$user_data['first_name'] = sanitize_text_field($params['first_name']);
 			update_user_meta($user_id, 'first_name', $user_data['first_name']);
@@ -92,28 +110,48 @@ class Healthedia_Profile_Endpoints {
 			$user_data['description'] = sanitize_textarea_field($params['description']);
 		}
 
-		wp_update_user($user_data);
+		$update_result = wp_update_user($user_data);
+		if (is_wp_error($update_result)) {
+			return new WP_Error('update_failed', $update_result->get_error_message(), array('status' => 500));
+		}
 
-		if (isset($params['_healthedia_username'])) {
+		// If password was updated, we need to log the user back in
+		if (!empty($params['new_password'])) {
+			wp_clear_auth_cookie();
+			wp_set_current_user($user_id);
+			wp_set_auth_cookie($user_id);
+		}
+
+		if (!empty($params['_healthedia_username'])) {
 			$new_username = sanitize_title($params['_healthedia_username']);
-			// Check if username is already taken by someone else
-			$exists = get_users(array(
-				'meta_key' => '_healthedia_username',
-				'meta_value' => $new_username,
-				'exclude' => array($user_id),
-				'number' => 1
-			));
+			$current_username = get_user_meta($user_id, '_healthedia_username', true);
 
-			$user_by_login = get_user_by('login', $new_username);
-			$login_conflict = $user_by_login && $user_by_login->ID != $user_id;
+			if ($new_username !== $current_username) {
+				$last_change = get_user_meta($user_id, '_healthedia_username_last_change', true);
+				if ($last_change && (time() - intval($last_change)) < (7 * DAY_IN_SECONDS)) {
+					return new WP_Error('username_rate_limit', 'Usernames can only be changed once every 7 days.', array('status' => 429));
+				}
 
-			$user_by_slug = get_user_by('slug', $new_username);
-			$slug_conflict = $user_by_slug && $user_by_slug->ID != $user_id;
+				// Check if username is already taken by someone else
+				$exists = get_users(array(
+					'meta_key' => '_healthedia_username',
+					'meta_value' => $new_username,
+					'exclude' => array($user_id),
+					'number' => 1
+				));
 
-			if (empty($exists) && !$login_conflict && !$slug_conflict) {
-				update_user_meta($user_id, '_healthedia_username', $new_username);
-			} else {
-				return new WP_Error('username_exists', 'That username is already taken.', array('status' => 400));
+				$user_by_login = get_user_by('login', $new_username);
+				$login_conflict = $user_by_login && $user_by_login->ID != $user_id;
+
+				$user_by_slug = get_user_by('slug', $new_username);
+				$slug_conflict = $user_by_slug && $user_by_slug->ID != $user_id;
+
+				if (empty($exists) && !$login_conflict && !$slug_conflict) {
+					update_user_meta($user_id, '_healthedia_username', $new_username);
+					update_user_meta($user_id, '_healthedia_username_last_change', time());
+				} else {
+					return new WP_Error('username_exists', 'That username is already taken.', array('status' => 400));
+				}
 			}
 		}
 

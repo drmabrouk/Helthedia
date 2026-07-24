@@ -168,6 +168,13 @@ document.addEventListener('DOMContentLoaded', () => {
 		const formRegister = document.getElementById('auth-form-register');
 		const formOtpVerify = document.getElementById('auth-form-otp-verify');
 
+		const forgotContainer = document.getElementById('auth-forgot-container');
+		const resetContainer = document.getElementById('auth-reset-container');
+		const formForgot = document.getElementById('auth-form-forgot');
+		const formReset = document.getElementById('auth-form-reset');
+		const btnForgotPassword = document.getElementById('btn-forgot-password');
+		const btnBackToLogin = document.getElementById('btn-back-to-login');
+
 		const showAlert = (msg, isError = true) => {
 			alerts.classList.remove('hidden');
 			if (isError) {
@@ -208,8 +215,12 @@ document.addEventListener('DOMContentLoaded', () => {
 			});
 		}
 
-		const requestOtp = (form, isReg) => {
-			const btn = isReg ? document.getElementById('btn-register-submit') : document.getElementById('btn-login-submit');
+		const requestOtp = (form, isReg, isForgot = false) => {
+			let btnId = 'btn-login-submit';
+			if (isReg) btnId = 'btn-register-submit';
+			if (isForgot) btnId = 'btn-forgot-submit';
+
+			const btn = document.getElementById(btnId);
 			const originalText = btn.innerHTML;
 			btn.innerHTML = '<span class="animate-pulse">Processing...</span>';
 			btn.disabled = true;
@@ -228,6 +239,7 @@ document.addEventListener('DOMContentLoaded', () => {
 				if (resData.success) {
 					verifyEmailInput.value = data.email;
 					verifyIsRegister.value = isReg;
+					if (isForgot) verifyIsRegister.value = 'forgot';
 
 					otpContainer.classList.remove('hidden', 'translate-y-full');
 					setTimeout(() => document.getElementById('auth-otp-page').focus(), 300);
@@ -241,17 +253,62 @@ document.addEventListener('DOMContentLoaded', () => {
 			});
 		};
 
+		if (btnForgotPassword && btnBackToLogin) {
+			btnForgotPassword.addEventListener('click', () => {
+				loginContainer.classList.add('hidden');
+				forgotContainer.classList.remove('hidden');
+				alerts.classList.add('hidden');
+			});
+			btnBackToLogin.addEventListener('click', () => {
+				forgotContainer.classList.add('hidden');
+				loginContainer.classList.remove('hidden');
+				alerts.classList.add('hidden');
+			});
+		}
+
 		if (formLogin) {
 			formLogin.addEventListener('submit', (e) => {
 				e.preventDefault();
-				requestOtp(formLogin, false);
+				const btn = document.getElementById('btn-login-submit');
+				const originalText = btn.innerHTML;
+				btn.innerHTML = '<span class="animate-pulse">Authenticating...</span>';
+				btn.disabled = true;
+				alerts.classList.add('hidden');
+
+				const formData = new FormData(formLogin);
+				const data = Object.fromEntries(formData.entries());
+
+				fetch('/wp-json/healthedia/v1/auth/login-standard', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify(data)
+				}).then(res => res.json()).then(resData => {
+					if (resData.success) {
+						window.location.href = '/';
+					} else {
+						btn.innerHTML = originalText;
+						btn.disabled = false;
+						showAlert(resData.message || 'Invalid credentials.');
+					}
+				}).catch(() => {
+					btn.innerHTML = originalText;
+					btn.disabled = false;
+					showAlert('Network error communicating with authentication server.');
+				});
 			});
 		}
 
 		if (formRegister) {
 			formRegister.addEventListener('submit', (e) => {
 				e.preventDefault();
-				requestOtp(formRegister, true);
+				requestOtp(formRegister, true, false);
+			});
+		}
+
+		if (formForgot) {
+			formForgot.addEventListener('submit', (e) => {
+				e.preventDefault();
+				requestOtp(formForgot, false, true);
 			});
 		}
 
@@ -266,18 +323,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
 				const formData = new FormData(formOtpVerify);
 				const data = Object.fromEntries(formData.entries());
-				data.is_register = data.is_register === 'true';
 
 				fetch('/wp-json/healthedia/v1/auth/verify-otp', {
 					method: 'POST',
 					headers: { 'Content-Type': 'application/json' },
 					body: JSON.stringify(data)
 				}).then(res => res.json()).then(resData => {
+					btn.innerHTML = originalText;
+					btn.disabled = false;
+
 					if (resData.success) {
-						window.location.href = '/';
+						if (data.is_register === 'forgot') {
+							// Transition to reset password UI
+							otpContainer.classList.add('hidden');
+							forgotContainer.classList.add('hidden');
+							resetContainer.classList.remove('hidden');
+							document.getElementById('reset-email').value = data.email;
+							document.getElementById('reset-otp').value = data.otp;
+							document.getElementById('auth-otp-page').value = '';
+							showAlert('Identity verified. Please set your new password.', false);
+						} else {
+							window.location.href = '/';
+						}
 					} else {
-						btn.innerHTML = originalText;
-						btn.disabled = false;
 						document.getElementById('auth-otp-page').value = '';
 						showAlert(resData.message || 'Invalid OTP.');
 						otpContainer.classList.add('translate-y-full');
@@ -293,6 +361,45 @@ document.addEventListener('DOMContentLoaded', () => {
 			});
 		}
 
+		if (formReset) {
+			formReset.addEventListener('submit', (e) => {
+				e.preventDefault();
+				const btn = document.getElementById('btn-reset-submit');
+				const originalText = btn.innerHTML;
+				btn.innerHTML = '<span class="animate-pulse">Saving...</span>';
+				btn.disabled = true;
+				alerts.classList.add('hidden');
+
+				const formData = new FormData(formReset);
+				const data = Object.fromEntries(formData.entries());
+
+				if (data.password !== data.password_confirm) {
+					showAlert('Passwords do not match.');
+					btn.innerHTML = originalText;
+					btn.disabled = false;
+					return;
+				}
+
+				fetch('/wp-json/healthedia/v1/auth/reset-password', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify(data)
+				}).then(res => res.json()).then(resData => {
+					if (resData.success) {
+						window.location.href = '/';
+					} else {
+						btn.innerHTML = originalText;
+						btn.disabled = false;
+						showAlert(resData.message || 'Error resetting password.');
+					}
+				}).catch(() => {
+					btn.innerHTML = originalText;
+					btn.disabled = false;
+					showAlert('Network error.');
+				});
+			});
+		}
+
 		if (btnCancelOtp) {
 			btnCancelOtp.addEventListener('click', () => {
 				otpContainer.classList.add('translate-y-full');
@@ -303,6 +410,23 @@ document.addEventListener('DOMContentLoaded', () => {
 			});
 		}
 	}
+
+	// Password Toggle Logic
+	document.querySelectorAll('.toggle-password').forEach(btn => {
+		btn.addEventListener('click', function() {
+			const targetId = this.getAttribute('data-target');
+			const input = document.getElementById(targetId);
+			if (input) {
+				if (input.type === 'password') {
+					input.type = 'text';
+					this.innerHTML = '<svg class="w-5 h-5 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.29 3.29m0 0a10.05 10.05 0 015.71-1.58c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path></svg>';
+				} else {
+					input.type = 'password';
+					this.innerHTML = '<svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>';
+				}
+			}
+		});
+	});
 
 	// Notifications Dropdown Logic
 	const btnNotifications = document.getElementById('btn-notifications');
