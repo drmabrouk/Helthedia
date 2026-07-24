@@ -73,51 +73,96 @@ if ($maintenance_mode === 'yes') {
 			</div>
 
 			<form id="auth-form-register" class="space-y-4">
-				<div class="flex gap-2">
-					<select name="title" class="w-24 border border-[#E0E0E0] rounded-xl px-2 py-3 font-sans text-sm outline-none focus:border-black transition-colors bg-white">
-						<option value="Dr.">Dr.</option>
-						<option value="Prof.">Prof.</option>
-						<option value="Mr.">Mr.</option>
-						<option value="Ms.">Ms.</option>
-					</select>
-					<input type="text" name="name" required placeholder="Full Academic Name" class="flex-1 border border-[#E0E0E0] rounded-xl px-4 py-3 font-sans text-sm outline-none focus:border-black transition-colors bg-white">
+
+				<!-- Step 1: Basic Info -->
+				<div id="reg-step-1" class="space-y-4 block">
+					<div class="flex flex-col md:flex-row gap-2">
+						<select name="title" class="w-full md:w-24 border border-[#E0E0E0] rounded-xl px-2 py-3 font-sans text-sm outline-none focus:border-black transition-colors bg-white">
+							<option value="Dr.">Dr.</option>
+							<option value="Prof.">Prof.</option>
+							<option value="Mr.">Mr.</option>
+							<option value="Ms.">Ms.</option>
+						</select>
+						<input type="text" name="first_name" id="reg-first" required placeholder="First Name" class="w-full md:flex-1 border border-[#E0E0E0] rounded-xl px-4 py-3 font-sans text-sm outline-none focus:border-black transition-colors bg-white">
+						<input type="text" name="last_name" id="reg-last" required placeholder="Last Name" class="w-full md:flex-1 border border-[#E0E0E0] rounded-xl px-4 py-3 font-sans text-sm outline-none focus:border-black transition-colors bg-white">
+					</div>
+
+					<div>
+						<input type="email" name="email" id="register-email" required placeholder="Institutional Email Address" class="w-full border border-[#E0E0E0] rounded-xl px-4 py-3 font-sans text-sm outline-none focus:border-black transition-colors bg-white">
+					</div>
+
+					<div class="flex flex-col md:flex-row gap-4">
+						<div class="relative w-full md:w-1/2">
+							<input type="password" name="password" id="register-password" required maxlength="100" placeholder="Secure Password" class="w-full border border-[#E0E0E0] rounded-xl px-4 py-3 font-sans text-sm outline-none focus:border-black transition-colors bg-white pr-10">
+							<button type="button" class="toggle-password absolute right-3 top-3 text-gray-400 hover:text-black" data-target="register-password">
+								<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+							</button>
+						</div>
+						<div class="relative w-full md:w-1/2">
+							<input type="password" name="password_confirm" id="register-password-confirm" required maxlength="100" placeholder="Confirm Password" class="w-full border border-[#E0E0E0] rounded-xl px-4 py-3 font-sans text-sm outline-none focus:border-black transition-colors bg-white pr-10">
+							<button type="button" class="toggle-password absolute right-3 top-3 text-gray-400 hover:text-black" data-target="register-password-confirm">
+								<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+							</button>
+						</div>
+					</div>
+
+					<div class="pt-4">
+						<button type="button" id="btn-reg-next-1" class="w-full bg-black text-white px-6 py-4 rounded-xl font-mono uppercase text-[10px] font-bold tracking-widest hover:bg-gray-800 transition-colors">
+							Next: Professional Details →
+						</button>
+					</div>
 				</div>
 
-				<div>
-					<input type="email" name="email" id="register-email" required placeholder="Institutional Email Address" class="w-full border border-[#E0E0E0] rounded-xl px-4 py-3 font-sans text-sm outline-none focus:border-black transition-colors bg-white">
+				<!-- Step 2: Academic Info -->
+				<div id="reg-step-2" class="space-y-4 hidden">
+					<div>
+						<input type="text" name="specialty" id="reg-specialty" required placeholder="Primary Specialty (e.g. Physiology)" class="w-full border border-[#E0E0E0] rounded-xl px-4 py-3 font-sans text-sm outline-none focus:border-black transition-colors bg-white">
+					</div>
+
+					<div class="flex flex-col md:flex-row gap-4">
+						<input type="text" name="institution" id="reg-institution" required placeholder="Institutional Affiliation" class="w-full md:w-1/2 border border-[#E0E0E0] rounded-xl px-4 py-3 font-sans text-sm outline-none focus:border-black transition-colors bg-white">
+						<input type="text" name="country" id="reg-country" required placeholder="Country of Origin" class="w-full md:w-1/2 border border-[#E0E0E0] rounded-xl px-4 py-3 font-sans text-sm outline-none focus:border-black transition-colors bg-white">
+					</div>
+
+					<div>
+						<input type="text" name="orcid" placeholder="ORCID Identifier iD (e.g. 0000-xxxx-xxxx-xxxx)" class="w-full border border-[#E0E0E0] rounded-xl px-4 py-3 font-mono text-xs outline-none focus:border-black transition-colors bg-white">
+					</div>
+
+					<div class="pt-4 flex gap-4">
+						<button type="button" id="btn-reg-back-2" class="w-1/3 bg-gray-100 text-gray-600 px-6 py-4 rounded-xl font-mono uppercase text-[10px] font-bold tracking-widest hover:bg-gray-200 transition-colors">
+							← Back
+						</button>
+						<button type="button" id="btn-reg-next-2" class="w-2/3 bg-black text-white px-6 py-4 rounded-xl font-mono uppercase text-[10px] font-bold tracking-widest hover:bg-gray-800 transition-colors">
+							Next: Terms & Policy →
+						</button>
+					</div>
 				</div>
 
-				<div class="relative">
-					<input type="password" name="password" id="register-password" required maxlength="100" placeholder="Secure Password" class="w-full border border-[#E0E0E0] rounded-xl px-4 py-3 font-sans text-sm outline-none focus:border-black transition-colors bg-white pr-10">
-					<button type="button" class="toggle-password absolute right-3 top-3 text-gray-400 hover:text-black" data-target="register-password">
-						<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
-					</button>
-				</div>
+				<!-- Step 3: Legal & Submit -->
+				<div id="reg-step-3" class="space-y-4 hidden">
+					<div class="bg-gray-50 border border-[#E0E0E0] rounded-xl p-4 font-mono text-[10px] text-gray-600 leading-relaxed uppercase tracking-widest">
+						By submitting this application, you verify that you hold an active clinical practice, university research post, or laboratory affiliation.
+					</div>
 
-				<div>
-					<input type="text" name="specialty" required placeholder="Primary Specialty (e.g. Physiology)" class="w-full border border-[#E0E0E0] rounded-xl px-4 py-3 font-sans text-sm outline-none focus:border-black transition-colors bg-white">
-				</div>
+					<div class="pt-2 pb-2">
+						<label class="flex items-start gap-3 cursor-pointer">
+							<input type="checkbox" id="reg-terms-check" required class="mt-0.5 w-4 h-4 text-black border-gray-300 rounded focus:ring-black">
+							<span class="font-mono text-[9px] text-gray-500 uppercase tracking-widest leading-relaxed">
+								I accept the <a href="<?php echo esc_url(get_option('healthedia_terms_url', '#')); ?>" target="_blank" class="text-black hover:underline">Terms and Conditions</a> and <a href="<?php echo esc_url(get_option('healthedia_privacy_policy_url', '#')); ?>" target="_blank" class="text-black hover:underline">Privacy Policy</a>.
+							</span>
+						</label>
+					</div>
 
-				<div class="flex flex-col md:flex-row gap-4">
-					<input type="text" name="institution" required placeholder="Institutional Affiliation" class="w-full md:w-1/2 border border-[#E0E0E0] rounded-xl px-4 py-3 font-sans text-sm outline-none focus:border-black transition-colors bg-white">
-					<input type="text" name="country" required placeholder="Country of Origin" class="w-full md:w-1/2 border border-[#E0E0E0] rounded-xl px-4 py-3 font-sans text-sm outline-none focus:border-black transition-colors bg-white">
-				</div>
+					<input type="hidden" name="name" id="reg-full-name" value="">
 
-				<div>
-					<input type="text" name="orcid" placeholder="ORCID Identifier iD (e.g. 0000-xxxx-xxxx-xxxx)" class="w-full border border-[#E0E0E0] rounded-xl px-4 py-3 font-mono text-xs outline-none focus:border-black transition-colors bg-white">
-				</div>
-
-				<div class="pt-2 pb-2">
-					<label class="flex items-start gap-3 cursor-pointer">
-						<input type="checkbox" required class="mt-0.5 w-4 h-4 text-black border-gray-300 rounded focus:ring-black">
-						<span class="font-mono text-[9px] text-gray-500 uppercase tracking-widest leading-relaxed">I hold an active clinical practice, university research post, or laboratory affiliation.</span>
-					</label>
-				</div>
-
-				<div>
-					<button type="submit" id="btn-register-submit" class="w-full bg-black text-white px-6 py-4 rounded-xl font-mono uppercase text-[10px] font-bold tracking-widest hover:bg-gray-800 transition-colors">
-						Verify Email & Register
-					</button>
+					<div class="pt-4 flex gap-4">
+						<button type="button" id="btn-reg-back-3" class="w-1/3 bg-gray-100 text-gray-600 px-6 py-4 rounded-xl font-mono uppercase text-[10px] font-bold tracking-widest hover:bg-gray-200 transition-colors">
+							← Back
+						</button>
+						<button type="submit" id="btn-register-submit" class="w-2/3 bg-black text-white px-6 py-4 rounded-xl font-mono uppercase text-[10px] font-bold tracking-widest hover:bg-gray-800 transition-colors">
+							Verify Email & Register
+						</button>
+					</div>
 				</div>
 			</form>
 		</div>

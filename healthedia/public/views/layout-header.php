@@ -15,16 +15,21 @@
 <body <?php body_class('bg-white text-[#111111] antialiased min-h-screen flex flex-col'); ?>>
 
 	<!-- Global Header (Archival Minimalist) -->
-	<header class="border-b border-[#E0E0E0] sticky top-0 bg-white/90 backdrop-blur-sm z-40">
+	<header class="sticky top-0 bg-white/90 backdrop-blur-sm z-40">
 		<div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
 
-			<a href="<?php echo home_url(); ?>" class="font-sans font-bold text-xl tracking-tighter uppercase z-50">Healthedia</a>
+			<div class="flex items-center gap-6 z-50">
+				<div>
+					<a href="<?php echo home_url(); ?>" class="font-sans font-bold text-xl tracking-tighter uppercase block leading-none">Healthedia</a>
+					<div class="font-mono text-[8px] uppercase tracking-widest text-gray-500 mt-1">Global Health Archive & Research Network</div>
+				</div>
 
-			<!-- Desktop Nav -->
-			<nav class="hidden md:flex items-center gap-6 font-mono text-sm uppercase tracking-wider ml-auto mr-6">
-				<a href="<?php echo home_url('/journal'); ?>" class="text-gray-500 hover:text-black transition-colors">Journal</a>
-				<a href="<?php echo home_url('/directory'); ?>" class="text-gray-500 hover:text-black transition-colors">Directory</a>
-			</nav>
+				<!-- Desktop Nav -->
+				<nav class="hidden md:flex items-center gap-6 font-mono text-sm uppercase tracking-wider pl-6 border-l border-[#E0E0E0]">
+					<a href="<?php echo home_url('/journal'); ?>" class="text-gray-500 hover:text-black transition-colors">Journal</a>
+					<a href="<?php echo home_url('/directory'); ?>" class="text-gray-500 hover:text-black transition-colors">Directory</a>
+				</nav>
+			</div>
 
 			<!-- Desktop Actions -->
 			<div class="hidden md:flex items-center gap-4">

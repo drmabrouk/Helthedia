@@ -39,6 +39,16 @@ document.addEventListener('DOMContentLoaded', () => {
 		}
 	}
 
+	// Search Suggestion Tags
+	document.querySelectorAll('.search-tag').forEach(tag => {
+		tag.addEventListener('click', function() {
+			if (gatewaySearchInput) {
+				gatewaySearchInput.value = this.innerText.trim();
+				gatewaySearchInput.closest('form').submit();
+			}
+		});
+	});
+
 	const escapeHTML = (str) => {
 		if (typeof str !== 'string') return str;
 		return str.replace(/[&<>'"]/g,
@@ -356,9 +366,76 @@ document.addEventListener('DOMContentLoaded', () => {
 			});
 		}
 
+		// Registration Multi-step UI Logic
+		const btnRegNext1 = document.getElementById('btn-reg-next-1');
+		const btnRegNext2 = document.getElementById('btn-reg-next-2');
+		const btnRegBack2 = document.getElementById('btn-reg-back-2');
+		const btnRegBack3 = document.getElementById('btn-reg-back-3');
+		const regStep1 = document.getElementById('reg-step-1');
+		const regStep2 = document.getElementById('reg-step-2');
+		const regStep3 = document.getElementById('reg-step-3');
+
+		if (btnRegNext1 && regStep1 && regStep2 && regStep3) {
+			btnRegNext1.addEventListener('click', () => {
+				const pw1 = document.getElementById('register-password').value;
+				const pw2 = document.getElementById('register-password-confirm').value;
+				if (!document.getElementById('reg-first').value || !document.getElementById('reg-last').value || !document.getElementById('register-email').value || !pw1 || !pw2) {
+					showAlert('Please complete all fields.');
+					return;
+				}
+				if (pw1 !== pw2) {
+					showAlert('Passwords do not match.');
+					return;
+				}
+				alerts.classList.add('hidden');
+				regStep1.classList.add('hidden');
+				regStep1.classList.remove('block');
+				regStep2.classList.remove('hidden');
+				regStep2.classList.add('block');
+			});
+
+			btnRegNext2.addEventListener('click', () => {
+				if (!document.getElementById('reg-specialty').value || !document.getElementById('reg-institution').value || !document.getElementById('reg-country').value) {
+					showAlert('Please complete all professional details.');
+					return;
+				}
+				alerts.classList.add('hidden');
+				regStep2.classList.add('hidden');
+				regStep2.classList.remove('block');
+				regStep3.classList.remove('hidden');
+				regStep3.classList.add('block');
+
+				// Set hidden full name for payload
+				const title = document.querySelector('select[name="title"]').value;
+				const first = document.getElementById('reg-first').value;
+				const last = document.getElementById('reg-last').value;
+				document.getElementById('reg-full-name').value = `${title} ${first} ${last}`;
+			});
+
+			btnRegBack2.addEventListener('click', () => {
+				regStep2.classList.add('hidden');
+				regStep2.classList.remove('block');
+				regStep1.classList.remove('hidden');
+				regStep1.classList.add('block');
+				alerts.classList.add('hidden');
+			});
+
+			btnRegBack3.addEventListener('click', () => {
+				regStep3.classList.add('hidden');
+				regStep3.classList.remove('block');
+				regStep2.classList.remove('hidden');
+				regStep2.classList.add('block');
+				alerts.classList.add('hidden');
+			});
+		}
+
 		if (formRegister) {
 			formRegister.addEventListener('submit', (e) => {
 				e.preventDefault();
+				if (!document.getElementById('reg-terms-check').checked) {
+					showAlert('You must accept the Terms and Privacy Policy.');
+					return;
+				}
 				requestOtp(formRegister, true, false);
 			});
 		}
