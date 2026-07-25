@@ -13,7 +13,7 @@ class Healthedia_Profile_Endpoints {
 			'methods' => 'POST',
 			'callback' => array($this, 'request_verification'),
 			'permission_callback' => function () {
-				return is_user_logged_in();
+				return current_user_can('request_verification');
 			}
 		));
 	}

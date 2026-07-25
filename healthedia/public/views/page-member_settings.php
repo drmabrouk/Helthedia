@@ -108,6 +108,7 @@ $public_url = $username ? home_url('/' . $username) : home_url('/profile/' . $us
 			</div>
 
 			<!-- Profile Information -->
+			<?php if (current_user_can('request_verification')) : ?>
 			<div class="bg-white border border-[#E0E0E0] rounded-2xl p-8">
 				<h2 class="font-sans font-bold uppercase tracking-wider text-sm mb-6">Academic Information</h2>
 
@@ -164,7 +165,7 @@ $public_url = $username ? home_url('/' . $username) : home_url('/profile/' . $us
 				</div>
 			</div>
 
-			<div class="flex justify-end">
+			<div class="flex justify-end mt-8">
 				<button type="submit" class="bg-black text-white px-8 py-3 rounded-full font-sans uppercase text-sm tracking-wide hover:bg-gray-800 transition-colors flex items-center gap-2">
 					<svg class="w-4 h-4 hidden" id="settings-spinner" class="animate-spin" fill="none" viewBox="0 0 24 24">
 						<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -173,9 +174,22 @@ $public_url = $username ? home_url('/' . $username) : home_url('/profile/' . $us
 					Save Changes
 				</button>
 			</div>
+			<?php endif; ?>
+			<?php if (!current_user_can('request_verification')) : ?>
+			<div class="flex justify-end mt-8">
+				<button type="submit" class="bg-black text-white px-8 py-3 rounded-full font-sans uppercase text-sm tracking-wide hover:bg-gray-800 transition-colors flex items-center gap-2">
+					<svg class="w-4 h-4 hidden" id="settings-spinner" class="animate-spin" fill="none" viewBox="0 0 24 24">
+						<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+						<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+					</svg>
+					Save Changes
+				</button>
+			</div>
+			<?php endif; ?>
 		</form>
 
 		<!-- Verification Request Workflow -->
+		<?php if (current_user_can('request_verification')) : ?>
 		<div class="mt-12 bg-gray-50 border border-[#E0E0E0] rounded-2xl p-8">
 			<h2 class="font-sans font-bold uppercase tracking-wider text-sm mb-2 flex items-center gap-2">
 				<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
@@ -217,6 +231,7 @@ $public_url = $username ? home_url('/' . $username) : home_url('/profile/' . $us
 				</form>
 			<?php endif; ?>
 		</div>
+			<?php endif; ?>
 	</main>
 </div>
 <script>

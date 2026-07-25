@@ -118,7 +118,7 @@ class Healthedia_Auth_Endpoints {
 				return new WP_Error('creation_failed', 'Failed to create account.', array('status' => 500));
 			}
 			$user = get_user_by('id', $user_id);
-			$user->set_role('subscriber');
+			$user->set_role('member');
 
 			// Save custom meta
 			wp_update_user(array('ID' => $user_id, 'display_name' => $temp_data['name']));

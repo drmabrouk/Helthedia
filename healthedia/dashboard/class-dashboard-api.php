@@ -175,7 +175,7 @@ class Healthedia_Dashboard_API {
 		$params = $request->get_json_params();
 		$email = sanitize_email($params['email']);
 		$name = sanitize_text_field($params['name']);
-		$role = sanitize_text_field($params['role'] ?? 'subscriber');
+		$roles = isset($params['roles']) && is_array($params['roles']) ? array_map('sanitize_text_field', $params['roles']) : array('member');
 
 		if (empty($email) || empty($name)) {
 			return new WP_Error('missing_fields', 'Name and Email are required.', array('status' => 400));
@@ -189,9 +189,16 @@ class Healthedia_Dashboard_API {
 			'user_login' => $email,
 			'user_pass' => wp_generate_password(),
 			'user_email' => $email,
-			'display_name' => $name,
-			'role' => $role
+			'display_name' => $name
 		));
+
+		if (!is_wp_error($user_id)) {
+			$user = get_userdata($user_id);
+			$user->set_role(''); // clear all roles
+			foreach ($roles as $r) {
+				$user->add_role($r);
+			}
+		}
 
 		if (is_wp_error($user_id)) {
 			return new WP_Error('create_failed', $user_id->get_error_message(), array('status' => 500));
@@ -207,11 +214,21 @@ class Healthedia_Dashboard_API {
 		$user_data = array('ID' => $id);
 		if (isset($params['name'])) $user_data['display_name'] = sanitize_text_field($params['name']);
 		if (isset($params['email'])) $user_data['user_email'] = sanitize_email($params['email']);
-		if (isset($params['role'])) $user_data['role'] = sanitize_text_field($params['role']);
 
 		$user_id = wp_update_user($user_data);
 		if (is_wp_error($user_id)) {
 			return new WP_Error('update_failed', $user_id->get_error_message(), array('status' => 500));
+		}
+
+		if (isset($params['roles']) && is_array($params['roles'])) {
+			$roles = array_map('sanitize_text_field', $params['roles']);
+			$user = get_userdata($id);
+			if ($user) {
+				$user->set_role(''); // clear all roles
+				foreach ($roles as $r) {
+					$user->add_role($r);
+				}
+			}
 		}
 
 		if (isset($params['is_restricted'])) {

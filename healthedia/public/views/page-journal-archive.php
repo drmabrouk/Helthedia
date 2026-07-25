@@ -7,7 +7,9 @@
 				<li><a href="#" class="block px-4 py-2 bg-black text-white rounded-full">Current Issue</a></li>
 				<li><a href="#" class="block px-4 py-2 text-gray-500 hover:text-black hover:bg-gray-50 rounded-full transition-colors">Archived Issues</a></li>
 				<li><a href="#" class="block px-4 py-2 text-gray-500 hover:text-black hover:bg-gray-50 rounded-full transition-colors">Editorial Board</a></li>
-				<li><a href="/submit-manuscript" class="block px-4 py-2 mt-4 border border-[#E0E0E0] text-gray-500 hover:text-black hover:border-black rounded-full transition-colors text-center">Submit Research</a></li>
+				<?php if (current_user_can('submit_journal')) : ?>
+				<li><a href="/submit-journal" class="block px-4 py-2 mt-4 border border-[#E0E0E0] text-gray-500 hover:text-black hover:border-black rounded-full transition-colors text-center">Submit Research</a></li>
+				<?php endif; ?>
 			</ul>
 		</div>
 	</aside>

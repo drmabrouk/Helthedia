@@ -4,6 +4,8 @@ class Healthedia_Activator {
 		require_once HEALTHEDIA_PLUGIN_DIR . 'includes/class-healthedia-db.php';
 		Healthedia_DB::create_tables();
 
+		self::register_custom_roles();
+
 		self::auto_provision_pages();
 
 		require_once HEALTHEDIA_PLUGIN_DIR . 'includes/class-healthedia-seeder.php';
@@ -13,6 +15,28 @@ class Healthedia_Activator {
 		$router = new Healthedia_Router();
 		$router->add_rewrite_rules();
 		flush_rewrite_rules();
+	}
+
+	private static function register_custom_roles() {
+		// Member Role
+		add_role('member', 'Member', array(
+			'read' => true,
+		));
+
+		// Researcher Role
+		add_role('researcher', 'Researcher', array(
+			'read' => true,
+			'submit_articles' => true,
+			'submit_ext_res' => true,
+			'submit_journal' => true,
+			'request_verification' => true
+		));
+
+		// Reviewer Role
+		add_role('reviewer', 'Reviewer', array(
+			'read' => true,
+			'review_journal_submissions' => true
+		));
 	}
 
 	private static function auto_provision_pages() {

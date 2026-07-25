@@ -7,11 +7,17 @@
 			$links = [
 				'member_settings' => ['url' => '/account-settings', 'label' => 'Account Settings'],
 				'member_saved' => ['url' => '/saved-research', 'label' => 'Saved Research'],
-				'member_requests' => ['url' => '/my-requests', 'label' => 'My Requests'],
-				'submit_article' => ['url' => '/submit-article', 'label' => 'Submit Article'],
-				'submit_research' => ['url' => '/submit-research', 'label' => 'Add Published Research'],
-				'submit_journal' => ['url' => '/submit-journal', 'label' => 'Submit to Journal']
+				'member_requests' => ['url' => '/my-requests', 'label' => 'My Requests']
 			];
+			if (current_user_can('submit_articles')) {
+				$links['submit_article'] = ['url' => '/submit-article', 'label' => 'Submit Article'];
+			}
+			if (current_user_can('submit_ext_res')) {
+				$links['submit_research'] = ['url' => '/submit-research', 'label' => 'Add Published Research'];
+			}
+			if (current_user_can('submit_journal')) {
+				$links['submit_journal'] = ['url' => '/submit-journal', 'label' => 'Submit to Journal'];
+			}
 			foreach ($links as $slug => $data) {
 				$activeClass = ($current === $slug) ? 'bg-black text-white' : 'text-gray-500 hover:text-black hover:bg-gray-50';
 				echo '<a href="'.home_url($data['url']).'" class="block px-4 py-2.5 rounded-full transition-colors '.$activeClass.'">'.$data['label'].'</a>';

@@ -75,6 +75,21 @@ class Healthedia_Router {
 				wp_redirect(home_url('/login'));
 				die();
 			}
+
+			// Enforce capability checks directly at the router level for UI rendering
+			if ($page === 'submit_article' && !current_user_can('submit_articles')) {
+				wp_redirect(home_url('/account-settings'));
+				die();
+			}
+			if ($page === 'submit_research' && !current_user_can('submit_ext_res')) {
+				wp_redirect(home_url('/account-settings'));
+				die();
+			}
+			if ($page === 'submit_journal' && !current_user_can('submit_journal')) {
+				wp_redirect(home_url('/account-settings'));
+				die();
+			}
+
 			return HEALTHEDIA_PLUGIN_DIR . "public/views/page-{$page}.php";
 		}
 

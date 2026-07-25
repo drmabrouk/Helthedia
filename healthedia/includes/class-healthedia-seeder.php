@@ -36,7 +36,7 @@ class Healthedia_Seeder {
 					'user_email' => $email,
 					'display_name' => 'Dr. Mock Researcher ' . $i,
 					'description' => 'This is a generated mock researcher for UI testing.',
-					'role' => 'subscriber'
+					'role' => 'researcher'
 				));
 				if (!is_wp_error($user_id)) {
 					update_user_meta($user_id, '_healthedia_is_mock', 'yes');

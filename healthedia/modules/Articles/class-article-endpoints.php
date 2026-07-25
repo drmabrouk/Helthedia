@@ -4,12 +4,12 @@ class Healthedia_Article_Endpoints {
 		register_rest_route('healthedia/v1', '/manuscript/submit', array(
 			'methods' => 'POST',
 			'callback' => array($this, 'handle_submission'),
-			'permission_callback' => function() { return is_user_logged_in(); }
+			'permission_callback' => function() { return current_user_can('submit_articles') || current_user_can('submit_ext_res') || current_user_can('submit_journal'); }
 		));
 		register_rest_route('healthedia/v1', '/manuscript/(?P<id>\d+)', array(
 			'methods' => 'DELETE',
 			'callback' => array($this, 'delete_submission'),
-			'permission_callback' => function() { return is_user_logged_in(); }
+			'permission_callback' => function() { return current_user_can('submit_articles') || current_user_can('submit_ext_res') || current_user_can('submit_journal'); }
 		));
 	}
 

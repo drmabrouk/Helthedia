@@ -14,7 +14,7 @@ class Healthedia_Directory_Endpoints {
 		$specialty = sanitize_text_field($request->get_param('specialty'));
 
 		$args = array(
-			'role'    => 'subscriber',
+			'role__in' => array('member', 'researcher', 'reviewer', 'editor', 'administrator'),
 			'orderby' => 'display_name',
 			'order'   => 'ASC',
 			'number'  => $per_page,

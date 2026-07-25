@@ -131,6 +131,7 @@ const Dashboard = () => {
 		e.preventDefault();
 		const formData = new FormData(e.target);
 		const data = Object.fromEntries(formData.entries());
+		data.roles = formData.getAll('roles[]');
 		try {
 			if (editingUser) {
 				await apiFetch(`users/${editingUser.id}`, { method: 'PUT', body: JSON.stringify(data) });
@@ -621,11 +622,15 @@ const Dashboard = () => {
 								<input type="email" name="email" defaultValue={editingUser?.email || ''} required className="w-full border border-[#E0E0E0] rounded-lg px-3 py-2 text-sm outline-none focus:border-black" />
 							</div>
 							<div>
-								<label className="block font-mono text-[10px] uppercase tracking-widest text-gray-500 mb-1">Role</label>
-								<select name="role" defaultValue={editingUser?.roles?.[0] || 'subscriber'} className="w-full border border-[#E0E0E0] rounded-lg px-3 py-2 text-sm outline-none focus:border-black bg-white">
-									<option value="subscriber">Subscriber</option>
-									<option value="administrator">Administrator</option>
-								</select>
+								<label className="block font-mono text-[10px] uppercase tracking-widest text-gray-500 mb-2">Roles</label>
+								<div className="space-y-2 border border-[#E0E0E0] rounded-lg p-3">
+									{['member', 'researcher', 'reviewer', 'editor', 'administrator'].map(r => (
+										<label key={r} className="flex items-center gap-2">
+											<input type="checkbox" name="roles[]" value={r} defaultChecked={editingUser?.roles?.includes(r)} className="w-4 h-4 text-black focus:ring-black border-gray-300 rounded" />
+											<span className="font-sans text-sm capitalize">{r}</span>
+										</label>
+									))}
+								</div>
 							</div>
 
 							{editingUser && (
