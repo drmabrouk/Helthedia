@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
 	// Search History & Autocomplete Logic
 	const searchHistoryKey = 'healthedia_search_history';
 	const archiveSearchInput = document.getElementById('archive-search-input') || gatewaySearchInput;
-	const searchHistoryDropdown = document.getElementById('search-history-dropdown');
+	const searchHistoryDropdown = document.getElementById('search-history-dropdown') || document.getElementById('search-history-container');
 	const searchHistoryList = document.getElementById('search-history-list');
 	const btnClearHistory = document.getElementById('btn-clear-history');
 
@@ -56,8 +56,15 @@ document.addEventListener('DOMContentLoaded', () => {
 		let history = getSearchHistory();
 		history = history.filter(q => q.toLowerCase() !== query.toLowerCase()); // Remove duplicates
 		history.unshift(query.trim()); // Add to top
-		if (history.length > 10) history = history.slice(0, 10); // Keep last 10
+		if (history.length > 3) history = history.slice(0, 3); // Keep last 3 searches only
 		localStorage.setItem(searchHistoryKey, JSON.stringify(history));
+	};
+
+	const removeSearchHistory = (query) => {
+		let history = getSearchHistory();
+		history = history.filter(q => q.toLowerCase() !== query.toLowerCase());
+		localStorage.setItem(searchHistoryKey, JSON.stringify(history));
+		renderSearchHistory();
 	};
 
 	const renderSearchHistory = () => {
@@ -69,15 +76,20 @@ document.addEventListener('DOMContentLoaded', () => {
 		}
 
 		searchHistoryList.innerHTML = history.map(q => `
-			<li class="history-item px-6 py-3 font-sans text-sm hover:bg-gray-50 cursor-pointer flex items-center gap-3 transition-colors border-b border-[#E0E0E0] last:border-0" data-query="${escapeHTML(q)}">
-				<svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-				${escapeHTML(q)}
+			<li class="history-item px-6 py-3 font-sans text-sm hover:bg-gray-50 flex items-center justify-between transition-colors border-b border-[#E0E0E0] last:border-0 group" data-query="${escapeHTML(q)}">
+				<div class="flex items-center gap-3 cursor-pointer flex-grow history-text">
+					<svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+					${escapeHTML(q)}
+				</div>
+				<button type="button" class="history-remove text-gray-300 hover:text-red-500 transition-colors p-1" data-query="${escapeHTML(q)}">
+					<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+				</button>
 			</li>
 		`).join('');
 
-		document.querySelectorAll('.history-item').forEach(item => {
-			item.addEventListener('click', function() {
-				archiveSearchInput.value = this.getAttribute('data-query');
+		document.querySelectorAll('.history-text').forEach(item => {
+			item.addEventListener('click', function(e) {
+				archiveSearchInput.value = this.closest('.history-item').getAttribute('data-query');
 				if (searchHistoryDropdown) searchHistoryDropdown.classList.add('hidden');
 				if (archiveSearchInput.closest('form')) {
 					archiveSearchInput.closest('form').submit();
@@ -85,6 +97,13 @@ document.addEventListener('DOMContentLoaded', () => {
 					const btnUpdate = document.getElementById('btn-update-search');
 					if (btnUpdate) btnUpdate.click();
 				}
+			});
+		});
+
+		document.querySelectorAll('.history-remove').forEach(btn => {
+			btn.addEventListener('click', function(e) {
+				e.stopPropagation();
+				removeSearchHistory(this.getAttribute('data-query'));
 			});
 		});
 	};
@@ -106,6 +125,46 @@ document.addEventListener('DOMContentLoaded', () => {
 		const btnUpdate = document.getElementById('btn-update-search');
 		if (btnUpdate) {
 			btnUpdate.addEventListener('click', () => saveSearchHistory(archiveSearchInput.value));
+		}
+
+		// Autocomplete suggestions (mock implementation based on typing)
+		const autocompleteContainer = document.getElementById('autocomplete-suggestions');
+		if (autocompleteContainer) {
+			archiveSearchInput.addEventListener('input', (e) => {
+				const val = e.target.value.trim().toLowerCase();
+				if (val.length > 2) {
+					// Dummy suggestions
+					const words = ['oncology', 'biomechanics', 'trials', 'verified', 'research', 'cardiology'];
+					const matches = words.filter(w => w.includes(val));
+
+					if (matches.length > 0) {
+						if (searchHistoryList) searchHistoryList.classList.add('hidden');
+						autocompleteContainer.classList.remove('hidden');
+
+						autocompleteContainer.innerHTML = matches.map(m => `
+							<div class="px-6 py-3 font-sans text-sm hover:bg-gray-50 cursor-pointer flex items-center gap-3 transition-colors autocomplete-item border-b border-[#E0E0E0] last:border-0" data-query="${escapeHTML(m)}">
+								<svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+								${escapeHTML(m)}
+							</div>
+						`).join('');
+
+						autocompleteContainer.querySelectorAll('.autocomplete-item').forEach(item => {
+							item.addEventListener('click', function(ev) {
+								archiveSearchInput.value = this.getAttribute('data-query');
+								saveSearchHistory(archiveSearchInput.value);
+								if (searchHistoryDropdown) searchHistoryDropdown.classList.add('hidden');
+								if (archiveSearchInput.closest('form')) archiveSearchInput.closest('form').submit();
+							});
+						});
+					} else {
+						autocompleteContainer.classList.add('hidden');
+						if (searchHistoryList) searchHistoryList.classList.remove('hidden');
+					}
+				} else {
+					autocompleteContainer.classList.add('hidden');
+					if (searchHistoryList) searchHistoryList.classList.remove('hidden');
+				}
+			});
 		}
 
 		// Close dropdown when clicking outside

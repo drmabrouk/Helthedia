@@ -111,17 +111,6 @@ class Healthedia {
 	}
 
 	public function register_publication_cpts() {
-		register_post_type('healthedia_post', array(
-			'labels' => array(
-				'name' => 'Standard Articles',
-				'singular_name' => 'Standard Article'
-			),
-			'public' => true,
-			'has_archive' => true,
-			'show_in_rest' => true,
-			'supports' => array('title', 'editor', 'author', 'thumbnail')
-		));
-
 		register_post_type('healthedia_ext_res', array(
 			'labels' => array(
 				'name' => 'External Research',

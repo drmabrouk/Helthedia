@@ -1,7 +1,7 @@
 	</div> <!-- End Main Content Wrapper -->
 
 	<!-- Global Footer -->
-	<footer class="bg-white py-6 mt-12">
+	<footer class="bg-white py-6">
 		<div class="max-w-7xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4">
 			<div class="font-mono text-[10px] text-gray-400 uppercase tracking-widest">
 				&copy; <?php echo date('Y'); ?> Healthedia Archive. All Rights Reserved.

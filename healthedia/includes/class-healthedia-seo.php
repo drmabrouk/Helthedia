@@ -61,9 +61,9 @@ class Healthedia_SEO {
 
 		// 3. Check for Article
 		global $post;
-		if (is_single() && in_array($post->post_type, ['healthedia_article', 'healthedia_post', 'healthedia_ext_res', 'healthedia_journal'])) {
+		if (is_single() && in_array($post->post_type, ['healthedia_article', 'post', 'healthedia_ext_res', 'healthedia_journal'])) {
 			$title = $post->post_title . ' | ' . get_bloginfo('name');
-			$description = wp_trim_words($post->post_content, 25, '...');
+			$description = wp_trim_words(strip_tags($post->post_content), 25, '...');
 			$doi = get_post_meta($post->ID, '_healthedia_doi', true);
 			$author_id = $post->post_author;
 			$author = get_userdata($author_id);

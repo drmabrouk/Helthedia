@@ -101,4 +101,4 @@
 	</div>
 
 	<!-- Main Content Wrapper -->
-	<div class="flex-grow">
+	<div class="flex-grow flex flex-col">

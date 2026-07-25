@@ -138,7 +138,7 @@ $orcid = get_user_meta($user_id, '_healthedia_orcid', true);
 				Avg Citations / Paper
 				<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
 			</div>
-			<div class="text-3xl font-sans font-bold mb-2"><?php $post_count = count_user_posts($user_id, 'healthedia_post') + count_user_posts($user_id, 'healthedia_ext_res') + count_user_posts($user_id, 'healthedia_journal') + count_user_posts($user_id, 'healthedia_article'); echo $metrics->citations > 0 ? number_format($metrics->citations / max(1, $post_count), 1) : 0; ?></div>
+			<div class="text-3xl font-sans font-bold mb-2"><?php $post_count = count_user_posts($user_id, 'post') + count_user_posts($user_id, 'healthedia_ext_res') + count_user_posts($user_id, 'healthedia_journal') + count_user_posts($user_id, 'healthedia_article'); echo $metrics->citations > 0 ? number_format($metrics->citations / max(1, $post_count), 1) : 0; ?></div>
 			<p class="text-xs text-gray-500">Mean citation rate per index publication.</p>
 		</div>
 
@@ -226,7 +226,7 @@ $orcid = get_user_meta($user_id, '_healthedia_orcid', true);
 
 		<div class="space-y-4">
 			<?php
-			$args = array('post_type' => array('healthedia_article', 'healthedia_post', 'healthedia_ext_res', 'healthedia_journal'), 'author' => $user_id, 'posts_per_page' => 10, 'orderby' => 'meta_value_num', 'meta_key' => '_healthedia_citations', 'order' => 'DESC');
+			$args = array('post_type' => array('healthedia_article', 'post', 'healthedia_ext_res', 'healthedia_journal'), 'author' => $user_id, 'posts_per_page' => 10, 'orderby' => 'meta_value_num', 'meta_key' => '_healthedia_citations', 'order' => 'DESC');
 			$query = new WP_Query($args);
 			if ($query->have_posts()): while ($query->have_posts()): $query->the_post();
 			?>

@@ -35,11 +35,11 @@ class Healthedia_Article_Endpoints {
 
 	public function handle_submission($request) {
 		$type = sanitize_text_field($request->get_param('type'));
-		if (empty($type)) $type = 'healthedia_post';
+		if (empty($type)) $type = 'post';
 
-		$allowed_types = ['healthedia_post', 'healthedia_ext_res', 'healthedia_journal', 'healthedia_article'];
+		$allowed_types = ['post', 'healthedia_ext_res', 'healthedia_journal', 'healthedia_article'];
 		if (!in_array($type, $allowed_types)) {
-			$type = 'healthedia_post';
+			$type = 'post';
 		}
 
 		$title = sanitize_text_field($request->get_param('title'));
@@ -62,7 +62,7 @@ class Healthedia_Article_Endpoints {
 			require_once(ABSPATH . 'wp-admin/includes/file.php');
 			require_once(ABSPATH . 'wp-admin/includes/media.php');
 
-			if ($type === 'healthedia_post') {
+			if ($type === 'post') {
 				// Cover image upload
 				$attachment_id = media_handle_upload('manuscript', 0);
 				if (is_wp_error($attachment_id)) {

@@ -15,7 +15,7 @@
 	</div>
 
 	<form id="form-submit-article" class="space-y-8 bg-white border border-[#E0E0E0] rounded-2xl p-8 shadow-sm">
-		<input type="hidden" id="ms-type" value="healthedia_post">
+		<input type="hidden" id="ms-type" value="post">
 		<div>
 			<label class="block font-mono text-[10px] uppercase tracking-widest text-gray-500 mb-2">Article Title</label>
 			<input type="text" id="ms-title" required class="w-full border border-[#E0E0E0] rounded-xl px-4 py-3 font-sans outline-none focus:border-black transition-colors">

@@ -252,11 +252,11 @@ class Healthedia_Dashboard_API {
 
 	public function get_articles(WP_REST_Request $request) {
 		$type = sanitize_text_field($request->get_param('type'));
-		if (empty($type)) $type = 'healthedia_post';
+		if (empty($type)) $type = 'post';
 
-		$allowed_types = ['healthedia_post', 'healthedia_ext_res', 'healthedia_journal', 'healthedia_article'];
+		$allowed_types = ['post', 'healthedia_ext_res', 'healthedia_journal', 'healthedia_article'];
 		if (!in_array($type, $allowed_types)) {
-			$type = 'healthedia_post';
+			$type = 'post';
 		}
 
 		$args = array(

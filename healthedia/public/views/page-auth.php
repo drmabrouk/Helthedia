@@ -19,14 +19,14 @@ if ($maintenance_mode === 'yes') {
 }
 ?>
 
-<div class="healthedia-auth min-h-[calc(100vh-64px)] flex items-center justify-center bg-gray-50 text-[#111111] py-12 px-4 relative">
-	<div class="bg-white border border-[#E0E0E0] rounded-2xl p-6 md:p-10 max-w-lg w-full shadow-sm relative overflow-hidden">
+<div class="healthedia-auth flex-grow flex items-center justify-center bg-white text-[#111111] py-4 px-4 relative">
+	<div class="bg-white border border-[#E0E0E0] rounded-2xl p-6 max-w-lg w-full shadow-sm relative overflow-hidden">
 
-		<div id="auth-alerts" class="hidden mb-6 p-4 rounded font-mono text-xs text-center border"></div>
+		<div id="auth-alerts" class="hidden mb-4 p-4 rounded font-mono text-xs text-center border"></div>
 
 		<?php if ($registration_enabled === 'yes'): ?>
 		<!-- Tabs -->
-		<div class="flex bg-gray-50 rounded-xl p-1 mb-10 border border-[#E0E0E0]">
+		<div class="flex bg-white rounded-xl p-1 mb-6 border border-[#E0E0E0]">
 			<button id="tab-login" class="flex-1 py-2 rounded-lg font-mono text-[10px] uppercase tracking-widest text-black bg-white border border-[#E0E0E0] shadow-sm font-bold transition-all">Login</button>
 			<button id="tab-register" class="flex-1 py-2 rounded-lg font-mono text-[10px] uppercase tracking-widest text-gray-400 border border-transparent hover:text-black transition-all">Create Account</button>
 		</div>
