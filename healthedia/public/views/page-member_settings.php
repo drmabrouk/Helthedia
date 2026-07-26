@@ -17,7 +17,7 @@ $public_url = $username ? home_url('/' . $username) : home_url('/profile/' . $us
 <div class="max-w-7xl mx-auto flex flex-col md:flex-row gap-12 py-12 px-4 bg-white text-[#111111]">
 	<?php include HEALTHEDIA_PLUGIN_DIR . 'public/views/layout-member-sidebar.php'; ?>
 
-	<main class="flex-grow max-w-3xl">
+	<main class="flex-grow max-w-7xl">
 		<h1 class="text-3xl font-sans font-bold uppercase tracking-tight mb-8 border-b border-[#E0E0E0] pb-4">Account Settings</h1>
 
 		<div id="settings-message" class="hidden mb-6 p-4 rounded-xl font-mono text-sm border"></div>
