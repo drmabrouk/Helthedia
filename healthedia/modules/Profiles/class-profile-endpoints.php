@@ -64,21 +64,12 @@ class Healthedia_Profile_Endpoints {
 			'_healthedia_institution',
 			'_healthedia_country',
 			'_healthedia_orcid',
-			'_healthedia_privacy_mode',
-			'_healthedia_experience',
-			'_healthedia_degree',
-			'_healthedia_qualifications',
-			'_healthedia_interests',
-			'_healthedia_honors'
+			'_healthedia_privacy_mode'
 		);
 
 		foreach ($updatable_meta as $key) {
 			if (isset($params[$key])) {
-				if (in_array($key, array('_healthedia_experience', '_healthedia_qualifications', '_healthedia_interests', '_healthedia_honors'))) {
-					update_user_meta($user_id, $key, sanitize_textarea_field($params[$key]));
-				} else {
-					update_user_meta($user_id, $key, sanitize_text_field($params[$key]));
-				}
+				update_user_meta($user_id, $key, sanitize_text_field($params[$key]));
 			}
 		}
 

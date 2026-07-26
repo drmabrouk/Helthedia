@@ -39,16 +39,26 @@ const Dashboard = () => {
 	const [editingCertificate, setEditingCertificate] = useState(null);
 
 	const apiFetch = async (endpoint, options = {}) => {
+		const nonce = window.healthediaDashboardSettings?.nonce || '';
+		const headers = {
+			'Content-Type': 'application/json',
+			...options.headers
+		};
+		if (nonce) {
+			headers['X-WP-Nonce'] = nonce;
+		}
+
 		const res = await fetch(`/wp-json/healthedia/v1/admin/${endpoint}`, {
 			...options,
-			headers: {
-				'Content-Type': 'application/json',
-				'X-WP-Nonce': window.healthediaDashboardSettings.nonce,
-				...options.headers
-			}
+			headers: headers
 		});
+
 		if (res.status === 401 || res.status === 403) {
-			window.location.href = '/login'; // Redirect unauthenticated/unauthorized users immediately
+			if (!nonce) {
+				console.error("API Error: Missing WP Nonce. Make sure healthediaDashboardSettings is properly injected by WordPress.");
+			} else {
+				window.location.href = '/login'; // Redirect unauthenticated/unauthorized users immediately
+			}
 			throw new Error('Unauthorized');
 		}
 		if (!res.ok) throw new Error('API Error');
