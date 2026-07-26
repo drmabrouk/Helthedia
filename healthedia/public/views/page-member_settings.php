@@ -12,6 +12,12 @@ $orcid = get_user_meta($user_id, '_healthedia_orcid', true);
 $privacy_mode = get_user_meta($user_id, '_healthedia_privacy_mode', true) ?: 'public';
 $description = get_user_meta($user_id, 'description', true);
 
+$experience = get_user_meta($user_id, '_healthedia_experience', true);
+$degree = get_user_meta($user_id, '_healthedia_degree', true);
+$qualifications = get_user_meta($user_id, '_healthedia_qualifications', true);
+$interests = get_user_meta($user_id, '_healthedia_interests', true);
+$honors = get_user_meta($user_id, '_healthedia_honors', true);
+
 $public_url = $username ? home_url('/' . $username) : home_url('/profile/' . $user_id);
 ?>
 <div class="max-w-7xl mx-auto flex flex-col md:flex-row gap-12 py-12 px-4 bg-white text-[#111111]">
@@ -159,9 +165,34 @@ $public_url = $username ? home_url('/' . $username) : home_url('/profile/' . $us
 					</div>
 				</div>
 
-				<div>
+				<div class="mt-4">
+					<label class="block font-mono text-[10px] uppercase tracking-widest text-gray-500 mb-2">Degree Level</label>
+					<input type="text" name="_healthedia_degree" value="<?php echo esc_attr($degree); ?>" placeholder="e.g. Ph.D. in Exercise Physiology, M.D." class="w-full border border-[#E0E0E0] rounded-xl px-4 py-2.5 font-sans outline-none focus:border-black bg-white">
+				</div>
+
+				<div class="mt-4">
 					<label class="block font-mono text-[10px] uppercase tracking-widest text-gray-500 mb-2">Professional Biography (Abstract)</label>
 					<textarea name="description" rows="5" class="w-full border border-[#E0E0E0] rounded-xl px-4 py-2.5 font-sans outline-none focus:border-black bg-white resize-y"><?php echo esc_textarea($description); ?></textarea>
+				</div>
+
+				<div class="mt-4">
+					<label class="block font-mono text-[10px] uppercase tracking-widest text-gray-500 mb-2">Professional Experience (One per line)</label>
+					<textarea name="_healthedia_experience" rows="5" class="w-full border border-[#E0E0E0] rounded-xl px-4 py-2.5 font-sans outline-none focus:border-black bg-white resize-y"><?php echo esc_textarea($experience); ?></textarea>
+				</div>
+
+				<div class="mt-4">
+					<label class="block font-mono text-[10px] uppercase tracking-widest text-gray-500 mb-2">Academic Qualifications (One per line)</label>
+					<textarea name="_healthedia_qualifications" rows="5" class="w-full border border-[#E0E0E0] rounded-xl px-4 py-2.5 font-sans outline-none focus:border-black bg-white resize-y"><?php echo esc_textarea($qualifications); ?></textarea>
+				</div>
+
+				<div class="mt-4">
+					<label class="block font-mono text-[10px] uppercase tracking-widest text-gray-500 mb-2">Research Interests (One per line)</label>
+					<textarea name="_healthedia_interests" rows="5" class="w-full border border-[#E0E0E0] rounded-xl px-4 py-2.5 font-sans outline-none focus:border-black bg-white resize-y"><?php echo esc_textarea($interests); ?></textarea>
+				</div>
+
+				<div class="mt-4">
+					<label class="block font-mono text-[10px] uppercase tracking-widest text-gray-500 mb-2">Honors & Certifications (One per line)</label>
+					<textarea name="_healthedia_honors" rows="5" class="w-full border border-[#E0E0E0] rounded-xl px-4 py-2.5 font-sans outline-none focus:border-black bg-white resize-y"><?php echo esc_textarea($honors); ?></textarea>
 				</div>
 			</div>
 

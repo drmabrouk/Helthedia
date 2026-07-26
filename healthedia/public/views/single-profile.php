@@ -37,6 +37,12 @@ $specialty = get_user_meta($user_id, '_healthedia_specialty', true);
 $institution = get_user_meta($user_id, '_healthedia_institution', true);
 $country = get_user_meta($user_id, '_healthedia_country', true);
 $orcid = get_user_meta($user_id, '_healthedia_orcid', true);
+
+$experience = get_user_meta($user_id, '_healthedia_experience', true);
+$degree = get_user_meta($user_id, '_healthedia_degree', true);
+$qualifications = get_user_meta($user_id, '_healthedia_qualifications', true);
+$interests = get_user_meta($user_id, '_healthedia_interests', true);
+$honors = get_user_meta($user_id, '_healthedia_honors', true);
 ?>
 <div class="healthedia-profile max-w-5xl mx-auto py-12 px-4 bg-white text-[#111111]">
 	<?php
@@ -109,10 +115,140 @@ $orcid = get_user_meta($user_id, '_healthedia_orcid', true);
 
 	<!-- Tabs -->
 	<div class="border-b border-[#E0E0E0] mb-8 flex gap-8">
-		<button class="pb-3 text-sm font-sans font-bold uppercase tracking-wider text-gray-400 hover:text-black">Overview & Academic Portfolio</button>
-		<button class="pb-3 text-sm font-sans font-bold uppercase tracking-wider border-b-2 border-black text-black">Research Impact</button>
+		<button id="btn-tab-overview" class="pb-3 text-sm font-sans font-bold uppercase tracking-wider border-b-2 border-black text-black">Overview & Academic Portfolio</button>
+		<button id="btn-tab-impact" class="pb-3 text-sm font-sans font-bold uppercase tracking-wider text-gray-400 hover:text-black border-b-2 border-transparent">Research Impact</button>
 	</div>
 
+	<!-- Tab Content: Overview & Academic Portfolio -->
+	<div id="tab-overview" class="block">
+		<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+			<!-- Left Column: Biography & Experience -->
+			<div class="lg:col-span-2 space-y-6">
+				<!-- Biography Card -->
+				<div class="border border-[#E0E0E0] rounded-2xl p-6 md:p-8">
+					<h3 class="font-mono text-xs font-bold uppercase tracking-widest mb-4 flex items-center gap-2 text-gray-400">
+						<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+						Biography
+					</h3>
+					<p class="font-sans text-sm text-gray-600 leading-relaxed">
+						<?php echo nl2br(esc_html($user->description ?: 'No biography provided.')); ?>
+					</p>
+				</div>
+
+				<!-- Professional Experience Card -->
+				<div class="border border-[#E0E0E0] rounded-2xl p-6 md:p-8">
+					<h3 class="font-mono text-xs font-bold uppercase tracking-widest mb-4 flex items-center gap-2 text-gray-400">
+						<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+						Professional Experience
+					</h3>
+					<ul class="list-disc list-outside ml-4 space-y-3 font-sans text-sm text-gray-600">
+						<?php
+						if ($experience) {
+							$exp_lines = explode("\n", $experience);
+							foreach ($exp_lines as $line) {
+								if (trim($line)) {
+									echo '<li>' . esc_html(trim($line)) . '</li>';
+								}
+							}
+						} else {
+							echo '<li>No professional experience listed.</li>';
+						}
+						?>
+					</ul>
+				</div>
+			</div>
+
+			<!-- Right Column: Credentials & Interests -->
+			<div class="space-y-6">
+				<!-- Academic Credentials Card -->
+				<div class="border border-[#E0E0E0] rounded-2xl p-6 md:p-8">
+					<h3 class="font-mono text-xs font-bold uppercase tracking-widest mb-6 flex items-center gap-2 text-gray-400">
+						<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222"></path></svg>
+						Academic Credentials
+					</h3>
+
+					<div class="mb-4">
+						<div class="font-mono text-[10px] uppercase tracking-widest text-gray-400 mb-1">Affiliation</div>
+						<div class="font-sans text-xs font-bold text-gray-800"><?php echo esc_html($institution ?: 'N/A'); ?></div>
+					</div>
+
+					<div class="mb-4">
+						<div class="font-mono text-[10px] uppercase tracking-widest text-gray-400 mb-1">Degree Level</div>
+						<div class="font-sans text-xs font-bold text-gray-800"><?php echo esc_html($degree ?: 'N/A'); ?></div>
+					</div>
+
+					<div>
+						<div class="font-mono text-[10px] uppercase tracking-widest text-gray-400 mb-2">Academic Qualifications</div>
+						<ul class="list-disc list-outside ml-4 space-y-1 font-sans text-xs text-gray-600">
+							<?php
+							if ($qualifications) {
+								$qual_lines = explode("\n", $qualifications);
+								foreach ($qual_lines as $line) {
+									if (trim($line)) {
+										echo '<li>' . esc_html(trim($line)) . '</li>';
+									}
+								}
+							} else {
+								echo '<li>None listed.</li>';
+							}
+							?>
+						</ul>
+					</div>
+				</div>
+
+				<!-- Research Interests Card -->
+				<div class="border border-[#E0E0E0] rounded-2xl p-6 md:p-8">
+					<h3 class="font-mono text-xs font-bold uppercase tracking-widest mb-4 flex items-center gap-2 text-gray-400">
+						<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
+						Research Interests
+					</h3>
+					<div class="flex flex-wrap gap-2">
+						<?php
+						if ($interests) {
+							$int_lines = explode("\n", $interests);
+							foreach ($int_lines as $line) {
+								if (trim($line)) {
+									echo '<span class="border border-[#E0E0E0] rounded-full px-3 py-1 font-sans text-xs text-gray-600 bg-white hover:bg-gray-50 transition-colors">' . esc_html(trim($line)) . '</span>';
+								}
+							}
+						} else {
+							echo '<span class="font-sans text-xs text-gray-500">No specific interests listed.</span>';
+						}
+						?>
+					</div>
+				</div>
+
+				<!-- Honors & Certifications Card -->
+				<div class="border border-[#E0E0E0] rounded-2xl p-6 md:p-8">
+					<h3 class="font-mono text-xs font-bold uppercase tracking-widest mb-4 flex items-center gap-2 text-gray-400">
+						<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path></svg>
+						Honors & Certifications
+					</h3>
+					<div class="space-y-4">
+						<?php
+						if ($honors) {
+							$honor_lines = explode("\n", $honors);
+							foreach ($honor_lines as $line) {
+								if (trim($line)) {
+									echo '
+									<div class="flex items-start gap-2">
+										<svg class="w-3.5 h-3.5 text-gray-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+										<span class="font-sans text-xs text-gray-600">' . esc_html(trim($line)) . '</span>
+									</div>';
+								}
+							}
+						} else {
+							echo '<span class="font-sans text-xs text-gray-500">None listed.</span>';
+						}
+						?>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Tab Content: Research Impact -->
+	<div id="tab-impact" class="hidden">
 	<!-- Metrics Grid -->
 	<div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
 		<div class="border border-[#E0E0E0] rounded-2xl p-6">
@@ -245,6 +381,53 @@ $orcid = get_user_meta($user_id, '_healthedia_orcid', true);
 			<?php endif; ?>
 		</div>
 	</div>
+	</div> <!-- End Tab Content: Research Impact -->
 
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+	const btnTabOverview = document.getElementById('btn-tab-overview');
+	const btnTabImpact = document.getElementById('btn-tab-impact');
+	const tabOverview = document.getElementById('tab-overview');
+	const tabImpact = document.getElementById('tab-impact');
+
+	if (btnTabOverview && btnTabImpact) {
+		btnTabOverview.addEventListener('click', () => {
+			// Update button styles
+			btnTabOverview.classList.replace('text-gray-400', 'text-black');
+			btnTabOverview.classList.replace('border-transparent', 'border-black');
+			btnTabOverview.classList.remove('hover:text-black');
+
+			btnTabImpact.classList.replace('text-black', 'text-gray-400');
+			btnTabImpact.classList.replace('border-black', 'border-transparent');
+			btnTabImpact.classList.add('hover:text-black');
+
+			// Update tab visibility
+			tabOverview.classList.remove('hidden');
+			tabOverview.classList.add('block');
+			tabImpact.classList.add('hidden');
+			tabImpact.classList.remove('block');
+		});
+
+		btnTabImpact.addEventListener('click', () => {
+			// Update button styles
+			btnTabImpact.classList.replace('text-gray-400', 'text-black');
+			btnTabImpact.classList.replace('border-transparent', 'border-black');
+			btnTabImpact.classList.remove('hover:text-black');
+
+			btnTabOverview.classList.replace('text-black', 'text-gray-400');
+			btnTabOverview.classList.replace('border-black', 'border-transparent');
+			btnTabOverview.classList.add('hover:text-black');
+
+			// Update tab visibility
+			tabImpact.classList.remove('hidden');
+			tabImpact.classList.add('block');
+			tabOverview.classList.add('hidden');
+			tabOverview.classList.remove('block');
+		});
+	}
+});
+</script>
+
 <?php include HEALTHEDIA_PLUGIN_DIR . 'public/views/layout-footer.php'; ?>
