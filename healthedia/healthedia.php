@@ -3,7 +3,7 @@
  * Plugin Name:       Healthedia
  * Plugin URI:        https://healthedia.com
  * Description:       A massive, standalone, and enterprise-grade WordPress plugin for a highly sophisticated, academic, and scientific networking platform.
- * Version:           1.1.0
+ * Version:           3.0.0
  * Author:            Healthedia
  * Text Domain:       healthedia
  */
@@ -16,7 +16,7 @@ if ( ! defined( 'WPINC' ) ) {
 /**
  * Currently plugin version.
  */
-define( 'HEALTHEDIA_VERSION', '1.1.0' );
+define( 'HEALTHEDIA_VERSION', '3.0.0' );
 define( 'HEALTHEDIA_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'HEALTHEDIA_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 
