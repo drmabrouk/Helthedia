@@ -12,7 +12,7 @@ class Healthedia_Router {
 		add_rewrite_rule('^directory/?', 'index.php?healthedia_page=directory', 'top');
 		add_rewrite_rule('^academies/?', 'index.php?healthedia_page=academies', 'top');
 
-		add_rewrite_rule('^journal/?', 'index.php?healthedia_page=journal_archive', 'top');
+		add_rewrite_rule('^journal/?$', 'index.php?healthedia_page=journal_archive', 'top');
 
 		add_rewrite_rule('^archive-search/?', 'index.php?healthedia_page=archive_search', 'top');
 
