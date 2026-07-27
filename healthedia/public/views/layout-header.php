@@ -36,7 +36,7 @@
 			<div class="hidden md:flex items-center gap-4">
 				<?php if ( is_user_logged_in() ) : ?>
 					<?php if ( current_user_can( 'manage_options' ) ) : ?>
-						<a href="<?php echo home_url('/healthedia-admin'); ?>" class="font-mono text-xs uppercase tracking-wider bg-blue-900 text-white px-3 py-1.5 rounded-full hover:bg-blue-800 transition-colors flex items-center gap-1">
+						<a href="<?php echo home_url('/healthedia-admin'); ?>" class="font-mono text-xs uppercase tracking-wider bg-[#800020] text-white px-3 py-1.5 rounded-full hover:bg-[#600018] transition-colors flex items-center gap-1">
 							<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V10"></path><path d="M18 20V4"></path><path d="M6 20v-4"></path></svg>
 							Dashboard
 						</a>
@@ -87,7 +87,7 @@
 		<div class="flex flex-col gap-4 mt-auto">
 			<?php if ( is_user_logged_in() ) : ?>
 				<?php if ( current_user_can( 'manage_options' ) ) : ?>
-					<a href="<?php echo home_url('/healthedia-admin'); ?>" class="font-mono text-sm uppercase tracking-wider bg-blue-900 text-white w-full py-4 rounded-xl flex items-center justify-center gap-2">
+					<a href="<?php echo home_url('/healthedia-admin'); ?>" class="font-mono text-sm uppercase tracking-wider bg-[#800020] text-white w-full py-4 rounded-xl flex items-center justify-center gap-2">
 						<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V10"></path><path d="M18 20V4"></path><path d="M6 20v-4"></path></svg>
 						System Dashboard
 					</a>

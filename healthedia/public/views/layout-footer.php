@@ -11,9 +11,6 @@
 				<a href="<?php echo esc_url(get_option('healthedia_terms_url', home_url('/terms-of-service'))); ?>" class="hover:text-black transition-colors">Terms of Service</a>
 				<a href="<?php echo home_url('/legal'); ?>" class="hover:text-black transition-colors">Data Integrity</a>
 			</div>
-			<div class="font-mono text-[10px] text-gray-400 uppercase tracking-widest">
-				System Version <?php echo HEALTHEDIA_VERSION; ?>
-			</div>
 		</div>
 	</footer>
 

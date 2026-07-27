@@ -7,7 +7,7 @@
 			<p class="font-mono text-sm text-gray-500 uppercase">Verified academic and clinical professionals</p>
 		</div>
 		<div>
-			<button class="bg-black text-white px-6 py-3 rounded-full font-sans uppercase text-sm tracking-wide hover:bg-gray-800 transition-colors">Become a Researcher</button>
+			<a href="<?php echo home_url('/login'); ?>" class="inline-block bg-black text-white px-8 py-3.5 rounded-xl font-sans font-bold uppercase text-sm tracking-wider hover:bg-[#800020] transition-colors shadow-sm text-center">Become a Researcher</a>
 		</div>
 	</div>
 
