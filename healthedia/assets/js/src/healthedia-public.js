@@ -460,6 +460,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 			const formData = new FormData(form);
 			const data = Object.fromEntries(formData.entries());
+			data.is_register = isReg;
 
 			fetch('/wp-json/healthedia/v1/auth/request-otp', {
 				method: 'POST',

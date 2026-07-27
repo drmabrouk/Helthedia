@@ -26,6 +26,7 @@ define( 'HEALTHEDIA_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 function activate_healthedia() {
 	require_once plugin_dir_path( __FILE__ ) . 'includes/class-healthedia-activator.php';
 	Healthedia_Activator::activate();
+	update_option('healthedia_needs_rewrite_flush', true);
 }
 
 /**
