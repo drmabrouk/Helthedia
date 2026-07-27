@@ -6,10 +6,10 @@
 			<div class="font-mono text-[10px] text-gray-400 uppercase tracking-widest">
 				&copy; <?php echo date('Y'); ?> Healthedia Archive. All Rights Reserved.
 			</div>
-			<div class="flex items-center gap-6 font-mono text-[10px] text-gray-400 uppercase tracking-widest">
-				<a href="<?php echo esc_url(get_option('healthedia_privacy_policy_url', '#')); ?>" class="hover:text-black transition-colors">Privacy Policy</a>
-				<a href="<?php echo esc_url(get_option('healthedia_terms_url', '#')); ?>" class="hover:text-black transition-colors">Terms of Service</a>
-				<a href="#" class="hover:text-black transition-colors">Data Integrity</a>
+			<nav class="flex flex-wrap justify-center gap-6 font-mono text-[10px] text-gray-500 uppercase tracking-widest mt-4 md:mt-0">
+				<a href="<?php echo esc_url(get_option('healthedia_privacy_policy_url', home_url('/privacy-policy'))); ?>" class="hover:text-black transition-colors">Privacy Policy</a>
+				<a href="<?php echo esc_url(get_option('healthedia_terms_url', home_url('/terms-of-service'))); ?>" class="hover:text-black transition-colors">Terms of Service</a>
+				<a href="<?php echo home_url('/legal'); ?>" class="hover:text-black transition-colors">Data Integrity</a>
 			</div>
 			<div class="font-mono text-[10px] text-gray-400 uppercase tracking-widest">
 				System Version <?php echo HEALTHEDIA_VERSION; ?>
