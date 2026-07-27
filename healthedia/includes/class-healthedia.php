@@ -54,12 +54,6 @@ class Healthedia {
 
 		$router = new Healthedia_Router();
 		$this->loader->add_action( 'init', $router, 'add_rewrite_rules' );
-		$this->loader->add_action( 'init', function() {
-			if (get_option('healthedia_needs_rewrite_flush')) {
-				flush_rewrite_rules();
-				delete_option('healthedia_needs_rewrite_flush');
-			}
-		});
 		$this->loader->add_action( 'login_init', $router, 'redirect_wp_login' );
 		$this->loader->add_action( 'wp_logout', $router, 'redirect_after_logout' );
 		$this->loader->add_action( 'template_include', $router, 'load_templates' );

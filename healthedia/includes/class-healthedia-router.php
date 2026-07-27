@@ -1,6 +1,11 @@
 <?php
 class Healthedia_Router {
 	public function add_rewrite_rules() {
+		if (get_option('healthedia_needs_rewrite_flush')) {
+			flush_rewrite_rules();
+			delete_option('healthedia_needs_rewrite_flush');
+		}
+
 		add_rewrite_rule('^healthedia-admin/?', 'index.php?healthedia_dashboard=1', 'top');
 		add_rewrite_rule('^healthedia-admin/(.*)?', 'index.php?healthedia_dashboard=1', 'top');
 		add_rewrite_rule('^dashboard/?', 'index.php?healthedia_dashboard=1', 'top');
