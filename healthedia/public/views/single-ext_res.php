@@ -43,7 +43,7 @@ include HEALTHEDIA_PLUGIN_DIR . 'public/views/layout-header.php';
 	</aside>
 
 	<!-- Main Content -->
-	<main class="w-full md:w-3/4 article-content transition-all duration-300">
+	<main class="flex-grow max-w-4xl w-full article-content transition-all duration-300">
 		<?php
 		require_once HEALTHEDIA_PLUGIN_DIR . 'public/views/partials/breadcrumbs.php';
 		healthedia_breadcrumbs();

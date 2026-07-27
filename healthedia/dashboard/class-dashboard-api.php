@@ -129,10 +129,23 @@ class Healthedia_Dashboard_API {
 	public function get_stats() {
 		global $wpdb;
 		$total_users = count_users();
-		$total_articles = wp_count_posts('healthedia_article')->publish;
+
+		// Sum up all the custom publication post types plus standard posts
+		$total_articles = 0;
+		$types = ['post', 'healthedia_ext_res', 'healthedia_journal'];
+		foreach ($types as $type) {
+			$counts = wp_count_posts($type);
+			if (isset($counts->publish)) {
+				$total_articles += $counts->publish;
+			}
+		}
 
 		$metrics_table = $wpdb->prefix . 'healthedia_metrics';
-		$total_views = $wpdb->get_var("SELECT SUM(views) FROM $metrics_table");
+		// Safely check if metrics table exists to prevent crash on fresh install
+		$total_views = 0;
+		if ($wpdb->get_var("SHOW TABLES LIKE '$metrics_table'") == $metrics_table) {
+			$total_views = $wpdb->get_var("SELECT SUM(views) FROM $metrics_table");
+		}
 
 		return rest_ensure_response(array(
 			'users' => $total_users['total_users'],

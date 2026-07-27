@@ -31,13 +31,13 @@
 	</div>
 
 	<!-- Search Suggestions -->
-	<div class="mt-8 flex flex-row items-center justify-center gap-2 font-mono text-[9px] uppercase tracking-widest max-w-3xl w-full px-4 md:px-0">
-		<span class="text-gray-400 mr-2 flex items-center whitespace-nowrap">Trending:</span>
-		<div class="flex flex-row gap-2 overflow-hidden items-center justify-start flex-nowrap w-full">
-			<span class="search-tag px-3 py-1 bg-gray-50 border border-[#E0E0E0] rounded-md text-gray-600 hover:bg-gray-100 hover:text-black hover:border-gray-300 cursor-pointer transition-all whitespace-nowrap">Oncology DOIs</span>
-			<span class="search-tag px-3 py-1 bg-gray-50 border border-[#E0E0E0] rounded-md text-gray-600 hover:bg-gray-100 hover:text-black hover:border-gray-300 cursor-pointer transition-all whitespace-nowrap">Verified Researchers</span>
-			<span class="search-tag px-3 py-1 bg-gray-50 border border-[#E0E0E0] rounded-md text-gray-600 hover:bg-gray-100 hover:text-black hover:border-gray-300 cursor-pointer transition-all whitespace-nowrap">Clinical Trials</span>
-			<span class="search-tag px-3 py-1 bg-gray-50 border border-[#E0E0E0] rounded-md text-gray-600 hover:bg-gray-100 hover:text-black hover:border-gray-300 cursor-pointer transition-all whitespace-nowrap">Biomechanics</span>
+	<div class="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3 font-mono text-[9px] md:text-[10px] uppercase tracking-widest max-w-3xl w-full px-4 md:px-0">
+		<span class="text-gray-400 flex items-center whitespace-nowrap">Trending:</span>
+		<div class="flex flex-row gap-2 overflow-x-auto scrollbar-hide items-center justify-start sm:justify-center flex-nowrap w-full pb-2 sm:pb-0">
+			<span class="search-tag px-3 py-1.5 bg-gray-50 border border-[#E0E0E0] rounded-md text-gray-600 hover:bg-gray-100 hover:text-black hover:border-gray-300 cursor-pointer transition-all whitespace-nowrap">Oncology DOIs</span>
+			<span class="search-tag px-3 py-1.5 bg-gray-50 border border-[#E0E0E0] rounded-md text-gray-600 hover:bg-gray-100 hover:text-black hover:border-gray-300 cursor-pointer transition-all whitespace-nowrap">Verified Researchers</span>
+			<span class="search-tag px-3 py-1.5 bg-gray-50 border border-[#E0E0E0] rounded-md text-gray-600 hover:bg-gray-100 hover:text-black hover:border-gray-300 cursor-pointer transition-all whitespace-nowrap">Clinical Trials</span>
+			<span class="search-tag px-3 py-1.5 bg-gray-50 border border-[#E0E0E0] rounded-md text-gray-600 hover:bg-gray-100 hover:text-black hover:border-gray-300 cursor-pointer transition-all whitespace-nowrap">Global Health Data</span>
 		</div>
 	</div>
 </div>
